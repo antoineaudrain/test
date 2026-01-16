@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN   @map("admin")
+  MANAGER @map("manager")
+  MEMBER  @map("member")
+
+  @@map("user_roles")
+}
+
+enum CompanyType {
+  DELIVERY   @map("delivery")
+  CLIENT     @map("client")
+  END_CLIENT @map("end_client")
+
+  @@map("company_types")
+}
+
+enum DeliveryStatus {
+  SCHEDULED   @map("scheduled")
+  IN_PROGRESS @map("in_progress")
+  COMPLETED   @map("completed")
+  CANCELLED   @map("cancelled")
+
+  @@map("delivery_statuses")
+}
+
+enum StopType {
+  PICKUP  @map("pickup")
+  DROPOFF @map("dropoff")
+  BOTH    @map("both")
+
+  @@map("step_type")
+}
+
+enum StopStatus {
+  PLANNED   @map("planned")
+  EN_ROUTE  @map("en_route")
+  DELIVERED @map("delivered")
+  FAILED    @map("failed")
+
+  @@map("stop_statuses")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  externalId String   @unique @map("external_id")
+  firstName  String   @map("first_name")
+  lastName   String   @map("last_name")
+  role       UserRole
+  companyId  String
+  vehicleId  String?
+
+  // Relations
+  company    Company    @relation("company_users", fields: [companyId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle?   @relation("vehicle_drivers", fields: [vehicleId], references: [id], onDelete: SetNull)
+  deliveries Delivery[] @relation("delivery_driver")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([companyId, vehicleId])
+  @@map("users")
+}
+
+model Address {
+  id               String @id @default(cuid())
+  externalId       String
+  address          String
+  city             String
+  state            String
+  postalCode       String
+  country          String
+  formattedAddress String
+  latitude         Float
+  longitude        Float
+
+  // Relations
+  companies    Company[]             @relation("company_address")
+  stops        Stop[]                @relation("stop_address")
+  requestStops DeliveryRequestStop[] @relation("request_stop_address")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([city, state, postalCode])
+  @@index([latitude, longitude])
+  @@map("addresses")
+}
+
+model Company {
+  id        String      @id @default(cuid())
+  name      String
+  type      CompanyType
+  addressId String      @map("address_id")
+  parentId  String?     @map("parent_id")
+
+  // Relations
+  address                   Address               @relation("company_address", fields: [addressId], references: [id], onDelete: Cascade)
+  parentCompany             Company?              @relation("company_hierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  clientCompanies           Company[]             @relation("company_hierarchy")
+  users                     User[]                @relation("company_users")
+  vehicles                  Vehicle[]             @relation("company_vehicles")
+  deliveries                Delivery[]            @relation("delivery_delivery_company")
+  clientDeliveries          Delivery[]            @relation("delivery_client_company")
+  stops                     Stop[]                @relation("stop_end_client")
+  deliveryRequests          DeliveryRequest[]     @relation("client_requests")
+  receivedDeliveryRequests  DeliveryRequest[]     @relation("delivery_requests")
+  endClientRequestStops     DeliveryRequestStop[] @relation("end_client_request_stops")
+  clientSettings            ClientSettings?
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([type, parentId])
+  @@map("companies")
+}
+
+model Vehicle {
+  id        String  @id @default(cuid())
+  plate     String  @unique
+  model     String?
+  companyId String  @map("company_id")
+
+  // Relations
+  company    Company    @relation("company_vehicles", fields: [companyId], references: [id], onDelete: Cascade)
+  drivers    User[]     @relation("vehicle_drivers")
+  deliveries Delivery[] @relation("delivery_vehicle")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([companyId])
+  @@map("vehicles")
+}
+
+model Delivery {
+  id                  String          @id @default(cuid())
+  number              String          @unique
+  date                DateTime        @db.Timestamptz(6)
+  notes               String?         @db.Text
+  driverName          String?         @map("driver_name")
+  vehicleLicensePlate String?         @map("vehicle_license_plate")
+  driverNotes         String?         @map("driver_notes") @db.Text
+  deliveryStatus      DeliveryStatus  @default(SCHEDULED) @map("delivery_status")
+  scheduledAt         DateTime?       @map("scheduled_at") @db.Timestamptz(6)
+  startedAt           DateTime?       @map("started_at") @db.Timestamptz(6)
+  finishedAt          DateTime?       @map("finished_at") @db.Timestamptz(6)
+  deliveryCompanyId   String          @map("delivery_company_id")
+  clientCompanyId     String          @map("client_company_id")
+  driverId            String?         @map("driver_id")
+  vehicleId           String?         @map("vehicle_id")
+
+  // Relations
+  deliveryCompany Company  @relation("delivery_delivery_company", fields: [deliveryCompanyId], references: [id], onDelete: Cascade)
+  clientCompany   Company  @relation("delivery_client_company", fields: [clientCompanyId], references: [id], onDelete: Cascade)
+  driver          User?    @relation("delivery_driver", fields: [driverId], references: [id], onDelete: SetNull)
+  vehicle         Vehicle? @relation("delivery_vehicle", fields: [vehicleId], references: [id], onDelete: SetNull)
+  stops           Stop[]   @relation("delivery_stops")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([date, deliveryStatus])
+  @@index([driverId, vehicleId])
+  @@index([deliveryCompanyId, date])
+  @@map("deliveries")
+}
+
+model Stop {
+  id          String     @id @default(cuid())
+  sequence    Int
+  type        StopType   @default(DROPOFF)
+  status      StopStatus @default(PLANNED)
+  notes       String?    @db.Text
+  driverNotes String?    @map("driver_notes") @db.Text
+  completedAt DateTime?  @map("completed_at") @db.Timestamptz(6)
+  imageUrl    String?    @map("image_url")
+  deliveryId  String     @map("delivery_id")
+  addressId   String     @map("address_id")
+  endClientId String     @map("end_client_id")
+
+  // Relations
+  delivery            Delivery             @relation("delivery_stops", fields: [deliveryId], references: [id], onDelete: Cascade)
+  address             Address              @relation("stop_address", fields: [addressId], references: [id], onDelete: Cascade)
+  endClientCompany    Company              @relation("stop_end_client", fields: [endClientId], references: [id], onDelete: Cascade)
+  sourceRequestStop   DeliveryRequestStop? @relation("request_to_delivery_stop")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([deliveryId, sequence])
+  @@index([status, endClientId])
+  @@map("stops")
+}
+
+model DeliveryRequest {
+  id                String   @id @default(cuid())
+  date              DateTime @db.Timestamptz(6)
+  notes             String?  @db.Text
+  clientCompanyId   String   @map("client_company_id")
+  deliveryCompanyId String   @map("delivery_company_id")
+
+  // Relations
+  clientCompany   Company               @relation("client_requests", fields: [clientCompanyId], references: [id], onDelete: Cascade)
+  deliveryCompany Company               @relation("delivery_requests", fields: [deliveryCompanyId], references: [id], onDelete: Cascade)
+  stops           DeliveryRequestStop[]
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([clientCompanyId, date])
+  @@index([deliveryCompanyId, date])
+  @@map("delivery_requests")
+}
+
+model DeliveryRequestStop {
+  id             String   @id @default(cuid())
+  sequence       Int
+  type           StopType
+  notes          String?  @db.Text
+  requestId      String   @map("request_id")
+  addressId      String   @map("address_id")
+  endClientId    String   @map("end_client_id")
+  deliveryStopId String?  @unique @map("delivery_stop_id")
+
+  // Relations
+  request          DeliveryRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  address          Address         @relation("request_stop_address", fields: [addressId], references: [id], onDelete: Cascade)
+  endClientCompany Company         @relation("end_client_request_stops", fields: [endClientId], references: [id], onDelete: Cascade)
+  deliveryStop     Stop?           @relation("request_to_delivery_stop", fields: [deliveryStopId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([requestId, sequence])
+  @@index([deliveryStopId])
+  @@index([endClientId])
+  @@map("delivery_request_stops")
+}
+
+model ClientSettings {
+  id              String  @id @default(cuid())
+  clientCompanyId String  @unique @map("client_company_id")
+  cutoffTime      String? @map("cutoff_time")
+
+  // Relations
+  clientCompany Company @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("client_settings")
+}
