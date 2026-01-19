@@ -108,9 +108,7 @@ export function DeliveryTable({
         id: "status",
         header: () => <Text>Statut</Text>,
         cell: ({ row: { original } }) => (
-          <StatusBadge
-            deliveryStatus={original.deliveryStatus}
-          />
+          <StatusBadge deliveryStatus={original.deliveryStatus} />
         ),
       }),
       columnHelper.accessor("driver", {

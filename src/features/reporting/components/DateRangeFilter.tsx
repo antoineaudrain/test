@@ -11,12 +11,15 @@ export function DateRangeFilter() {
   const [isPending, startTransition] = useTransition();
 
   const dateFrom =
-    searchParams.get("dateFrom") || Time().startOf("month").format("YYYY-MM-DD");
+    searchParams.get("dateFrom") ||
+    Time().startOf("month").format("YYYY-MM-DD");
   const dateTo =
     searchParams.get("dateTo") || Time().endOf("month").format("YYYY-MM-DD");
 
   const handleApplyFilter = () => {
-    const dateFromInput = document.getElementById("dateFrom") as HTMLInputElement;
+    const dateFromInput = document.getElementById(
+      "dateFrom",
+    ) as HTMLInputElement;
     const dateToInput = document.getElementById("dateTo") as HTMLInputElement;
 
     const params = new URLSearchParams();

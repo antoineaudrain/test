@@ -54,10 +54,6 @@ export default async function DeliveriesPage() {
         <div className="flex flex-col max-sm:w-full sm:flex-1 gap-y-2">
           <Heading>Livraisons</Heading>
         </div>
-
-        {canViewNewPage && (
-          <Button href="/deliveries/new">Ajouter Livraison</Button>
-        )}
       </div>
 
       <DeliveryCallout

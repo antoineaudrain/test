@@ -105,9 +105,7 @@ export function TodayCard({ data }: TodayCardProps) {
                     {(data.requests?.clientsCount ?? 0) > 1 ? "s" : ""}
                   </div>
                   <Link href={`/deliveries/new?date=${today}`}>
-                    <Button outline>
-                      Organiser
-                    </Button>
+                    <Button outline>Organiser</Button>
                   </Link>
                 </div>
               </div>

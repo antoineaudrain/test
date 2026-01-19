@@ -1,8 +1,8 @@
 import {
   ArrowRightIcon,
   BuildingIcon,
+  MapPinIcon,
   PackageCheckIcon,
-  UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge, Button, Card, CardContent } from "@/features/shared/components";
@@ -166,7 +166,7 @@ export function DeliveryCallout({
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UsersIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <MapPinIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   <span className="text-sm font-medium text-amber-900 dark:text-amber-100">
                     {deliveryRequestStats.endClientsCount} arrêt
                     {deliveryRequestStats.endClientsCount > 1 ? "s" : ""}

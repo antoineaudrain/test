@@ -1,8 +1,4 @@
-import {
-  DeliveryStatus,
-  type Prisma,
-  StopType,
-} from "@/generated/prisma";
+import { DeliveryStatus, type Prisma, StopType } from "@/generated/prisma";
 import { dateStringToDate, Time } from "@/lib/time";
 
 type Company = Prisma.CompanyGetPayload<{

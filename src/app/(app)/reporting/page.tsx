@@ -31,10 +31,7 @@ export default async function ReportingPage({
   });
 
   // Aggregate data by end client
-  const endClientStats = new Map<
-    string,
-    ClientDeliverySummaryTableRow
-  >();
+  const endClientStats = new Map<string, ClientDeliverySummaryTableRow>();
 
   for (const delivery of deliveries) {
     for (const stop of delivery.stops) {
