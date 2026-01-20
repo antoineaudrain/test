@@ -514,9 +514,9 @@ export function NewDeliveryRequestForm({
                 Demande utilisée pour créer des livraisons
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                Cette demande a été utilisée pour créer des livraisons. Vous pouvez
-                ajouter de nouveaux arrêts, mais vous ne pouvez pas supprimer les
-                arrêts existants qui sont liés à des livraisons.
+                Cette demande a été utilisée pour créer des livraisons. Vous
+                pouvez ajouter de nouveaux arrêts, mais vous ne pouvez pas
+                supprimer les arrêts existants qui sont liés à des livraisons.
               </p>
             </div>
           </div>

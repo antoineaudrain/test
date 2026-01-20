@@ -394,7 +394,11 @@ export function DeliveryTable({
             <TableRow
               key={row.id}
               href={`/deliveries/${row.original.id}`}
-              className={clsx(["COMPLETED", "CANCELLED"].includes(row.original.deliveryStatus) && "opacity-50")}
+              className={clsx(
+                ["COMPLETED", "CANCELLED"].includes(
+                  row.original.deliveryStatus,
+                ) && "opacity-50",
+              )}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

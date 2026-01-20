@@ -48,22 +48,20 @@ export default async function DeliveriesPage() {
       : null,
   }));
 
-  console.log(todayStats)
-
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col max-sm:w-full sm:flex-1 gap-y-2">
-          <Heading>Livraisons</Heading>
-        </div>
-      </div>
-
       <DeliveryCallout
         ongoingDelivery={todayStats.ongoingDelivery}
         deliveryRequestStats={todayStats.deliveryRequestStats}
         todayDeliveries={todayStats.todayDeliveries}
         unassignedStopsCount={todayStats.unassignedStopsCount}
       />
+
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col max-sm:w-full sm:flex-1 gap-y-2">
+          <Heading>Toutes mes livraisons</Heading>
+        </div>
+      </div>
 
       <DeliveryTable data={data} showDriverFilter={showDriverFilter} />
     </div>

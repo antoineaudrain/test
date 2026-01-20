@@ -277,7 +277,7 @@ export class Policies {
       isCurrentCompanyId: this.isCurrentCompanyId(delivery.deliveryCompanyId),
       isScheduled: delivery.deliveryStatus === "SCHEDULED",
       deliveryStatus: delivery.deliveryStatus,
-    })
+    });
     if (!this.isDeliveryCompany())
       throw new PolicyError("Only delivery can update delivery sequence");
     if (!this.isCurrentCompanyId(delivery.deliveryCompanyId))

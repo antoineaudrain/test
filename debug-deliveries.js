@@ -1,14 +1,20 @@
-const { PrismaClient } = require('./src/generated/prisma');
+const { PrismaClient } = require("./src/generated/prisma");
 const prisma = new PrismaClient();
 
 async function debug() {
   // Get today in Paris timezone
   const now = new Date();
-  const parisTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
-  const today = new Date(parisTime.getFullYear(), parisTime.getMonth(), parisTime.getDate());
+  const parisTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Europe/Paris" }),
+  );
+  const today = new Date(
+    parisTime.getFullYear(),
+    parisTime.getMonth(),
+    parisTime.getDate(),
+  );
 
-  console.log('Today (Paris timezone):', today);
-  console.log('Today ISO:', today.toISOString());
+  console.log("Today (Paris timezone):", today);
+  console.log("Today ISO:", today.toISOString());
 
   // Get all deliveries
   const allDeliveries = await prisma.delivery.findMany({
@@ -20,28 +26,28 @@ async function debug() {
       deliveryCompanyId: true,
     },
     orderBy: {
-      date: 'desc'
+      date: "desc",
     },
-    take: 10
+    take: 10,
   });
 
-  console.log('\nAll recent deliveries:');
+  console.log("\nAll recent deliveries:");
   console.log(allDeliveries);
 
   // Get deliveries for today
   const todayDeliveries = await prisma.delivery.findMany({
     where: {
-      date: today
+      date: today,
     },
     select: {
       id: true,
       number: true,
       date: true,
       deliveryStatus: true,
-    }
+    },
   });
 
-  console.log('\nDeliveries for today:');
+  console.log("\nDeliveries for today:");
   console.log(todayDeliveries);
 
   await prisma.$disconnect();

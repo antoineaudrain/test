@@ -24,9 +24,5 @@ export default async function DeliveryCreationPage({
 
   const data = await getDeliveryCreationData(date);
 
-  return (
-    <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:py-8 max-w-7xl">
-      <DeliveryCreationInterface initialData={data} />
-    </div>
-  );
+  return <DeliveryCreationInterface initialData={data} />;
 }

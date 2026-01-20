@@ -3,10 +3,16 @@ import {
   ArrowRightIcon,
   BuildingIcon,
   MapPinIcon,
-  PackageCheckIcon, TruckIcon,
+  PackageCheckIcon,
+  TruckIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Button, Card, CardContent } from "@/features/shared/components";
+import {
+  Button,
+  Card,
+  CardContent,
+  Heading,
+} from "@/features/shared/components";
 
 type OngoingDelivery = {
   id: string;
@@ -66,6 +72,19 @@ export function DeliveryCallout({
 
     return (
       <div className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col max-sm:w-full sm:flex-1 gap-y-2">
+            <Heading>Livraisons d'aujourd'hui</Heading>
+          </div>
+
+          <Link href="/deliveries/new">
+            <Button>
+              Modifier les livraisons
+              <ArrowRightIcon className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
+
         {/* Alert banner for unassigned stops */}
         {unassignedStopsCount > 0 && (
           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
@@ -76,10 +95,12 @@ export function DeliveryCallout({
                   Arrêts non assignés
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  {unassignedStopsCount} arrêt{unassignedStopsCount > 1 ? "s" : ""} de demandes de
-                  livraison {unassignedStopsCount > 1 ? "ne sont" : "n'est"} pas encore assigné
-                  {unassignedStopsCount > 1 ? "s" : ""} à une livraison. Cliquez sur le bouton
-                  ci-dessous pour les ajouter.
+                  {unassignedStopsCount} arrêt
+                  {unassignedStopsCount > 1 ? "s" : ""} de demandes de livraison{" "}
+                  {unassignedStopsCount > 1 ? "ne sont" : "n'est"} pas encore
+                  assigné
+                  {unassignedStopsCount > 1 ? "s" : ""} à une livraison. Cliquez
+                  sur le bouton ci-dessus pour les ajouter.
                 </p>
               </div>
             </div>
@@ -89,39 +110,25 @@ export function DeliveryCallout({
         {/* Main card */}
         <Card>
           <CardContent className="py-4">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
                 <PackageCheckIcon className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-                  Livraisons d'aujourd'hui
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                  Gérez et modifiez vos livraisons en cours
-                </p>
-                <div className="flex items-center gap-6 mt-3">
-                  <div className="flex items-center gap-2">
-                    <TruckIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
-                      {todayDeliveries.length} livraison
-                      {todayDeliveries.length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
-                      {completedStops}/{totalStops} arrêts complétés
-                    </span>
-                  </div>
+              <div className="flex flex-1 min-w-0 h-full flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <TruckIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {todayDeliveries.length} livraison
+                    {todayDeliveries.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {completedStops}/{totalStops} arrêts complétés
+                  </span>
                 </div>
               </div>
-              <Link href="/deliveries/new">
-                <Button>
-                  Modifier les livraisons
-                  <ArrowRightIcon className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
             </div>
           </CardContent>
         </Card>

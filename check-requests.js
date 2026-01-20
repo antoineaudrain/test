@@ -1,4 +1,4 @@
-const { PrismaClient } = require('./src/generated/prisma');
+const { PrismaClient } = require("./src/generated/prisma");
 const prisma = new PrismaClient();
 
 async function check() {
@@ -6,20 +6,22 @@ async function check() {
     include: {
       stops: true,
       clientCompany: {
-        select: { name: true }
+        select: { name: true },
       },
       deliveryCompany: {
-        select: { name: true }
-      }
+        select: { name: true },
+      },
     },
     orderBy: {
-      date: 'desc'
-    }
+      date: "desc",
+    },
   });
 
   console.log(`Found ${requests.length} delivery requests:\n`);
-  requests.forEach(req => {
-    console.log(`- ${req.date.toISOString().split('T')[0]} | ${req.clientCompany.name} → ${req.deliveryCompany.name} | ${req.stops.length} stops`);
+  requests.forEach((req) => {
+    console.log(
+      `- ${req.date.toISOString().split("T")[0]} | ${req.clientCompany.name} → ${req.deliveryCompany.name} | ${req.stops.length} stops`,
+    );
   });
 
   await prisma.$disconnect();
