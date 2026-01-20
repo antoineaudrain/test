@@ -68,14 +68,6 @@ export default async function DeliveryDetailsPage({
     policies.canOpenWaybill(delivery),
   );
 
-  console.log({
-    canEditDeliverySequence,
-    canViewDeliveryStopTable,
-    canStartDelivery,
-    canResumeDelivery,
-    canOpenWaybill,
-  })
-
   const data = delivery.stops.map<DeliveryStopTableRow>((stop) => ({
     id: stop.id,
     name: stop.endClientCompany.name,
@@ -157,24 +149,20 @@ export default async function DeliveryDetailsPage({
           </div>
         )}
 
-        {/*{canEditDeliveryStops && <EditDeliveryStopsForm delivery={delivery} />}*/}
-
         {canEditDeliverySequence && (
           <EditDeliverySequenceForm delivery={delivery} />
         )}
 
         {canViewDeliveryStopTable && <DeliveryStopTable data={data} />}
 
-        {/*{!canEditDeliveryStops && (*/}
-        {/*  <div>*/}
-        {/*    <Subheading>Notes</Subheading>*/}
-        {/*    {delivery.notes ? (*/}
-        {/*      <Text>{delivery.notes}</Text>*/}
-        {/*    ) : (*/}
-        {/*      <Text className="italic opacity-30">Pas de notes</Text>*/}
-        {/*    )}*/}
-        {/*  </div>*/}
-        {/*)}*/}
+        <div>
+          <Subheading>Notes</Subheading>
+          {delivery.notes ? (
+            <Text>{delivery.notes}</Text>
+          ) : (
+            <Text className="italic opacity-30">Pas de notes</Text>
+          )}
+        </div>
 
         {delivery.deliveryStatus === "COMPLETED" && (
           <div>
