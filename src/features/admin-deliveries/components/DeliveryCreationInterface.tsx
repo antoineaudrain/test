@@ -3,7 +3,8 @@
 import {
   AlertCircleIcon,
   BuildingIcon,
-  CheckCircle2Icon, ChevronLeftIcon,
+  CheckCircle2Icon,
+  ChevronLeftIcon,
   PackageIcon,
   PlusIcon,
 } from "lucide-react";
@@ -11,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { saveDeliveries } from "@/features/admin-deliveries/actions/mutations/saveDeliveries";
 import type { DeliveryCreationData } from "@/features/admin-deliveries/actions/queries/getDeliveryCreationData";
-import {Button, Heading, Link, Text} from "@/features/shared/components";
+import { Button, Heading, Link, Text } from "@/features/shared/components";
 import { DeliveryCard } from "./DeliveryCard";
 import { EndClientSelectionModal } from "./EndClientSelectionModal";
 import { SaveConfirmationDialog } from "./SaveConfirmationDialog";
@@ -62,6 +63,14 @@ export function DeliveryCreationInterface({
   const initialDeliveriesRef = useRef<DeliveryState[]>(deliveries);
 
   const [deletedDeliveryIds, setDeletedDeliveryIds] = useState<string[]>([]);
+
+  // Filter out end clients where all stops are already assigned to deliveries
+  const availableEndClients = useMemo(() => {
+    return initialData.endClients.filter((ec) => {
+      // Check if at least one stop is not assigned to a delivery
+      return ec.requestStops.some((stop) => !stop.deliveryStop);
+    });
+  }, [initialData.endClients]);
 
   // Calculate assigned end clients
   const assignedEndClientIds = new Set(
@@ -178,7 +187,9 @@ export function DeliveryCreationInterface({
     // Check if any existing delivery was modified
     for (let i = 0; i < deliveries.length; i++) {
       const current = deliveries[i];
-      const initial = initialDeliveriesRef.current.find((d) => d.id === current.id);
+      const initial = initialDeliveriesRef.current.find(
+        (d) => d.id === current.id,
+      );
 
       if (!initial) return true; // Delivery not found in initial state
 
@@ -252,21 +263,21 @@ export function DeliveryCreationInterface({
             <div className="flex items-center gap-1.5">
               <BuildingIcon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
-              <strong className="font-semibold text-zinc-900 dark:text-white">
-                {initialData.summary.totalRequests}
-              </strong>{" "}
+                <strong className="font-semibold text-zinc-900 dark:text-white">
+                  {initialData.summary.totalRequests}
+                </strong>{" "}
                 client{initialData.summary.totalRequests > 1 ? "s" : ""}
-            </span>
+              </span>
             </div>
             <div className="hidden sm:block h-3 w-px bg-zinc-300 dark:bg-zinc-700" />
             <div className="flex items-center gap-1.5">
               <PackageIcon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
-              <strong className="font-semibold text-zinc-900 dark:text-white">
-                {initialData.endClients.length}
-              </strong>{" "}
+                <strong className="font-semibold text-zinc-900 dark:text-white">
+                  {initialData.endClients.length}
+                </strong>{" "}
                 adresse{initialData.endClients.length > 1 ? "s" : ""}
-            </span>
+              </span>
             </div>
             <div className="hidden sm:block h-3 w-px bg-zinc-300 dark:bg-zinc-700" />
             <div className="flex items-center gap-1.5">
@@ -276,13 +287,15 @@ export function DeliveryCreationInterface({
                 <AlertCircleIcon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 shrink-0" />
               )}
               <span className="truncate">
-              <strong className="font-semibold text-zinc-900 dark:text-white">
-                {allAssigned ? initialData.summary.totalStops : unassignedStops}
-              </strong>{" "}
+                <strong className="font-semibold text-zinc-900 dark:text-white">
+                  {allAssigned
+                    ? initialData.summary.totalStops
+                    : unassignedStops}
+                </strong>{" "}
                 {allAssigned
                   ? "arrêts assignés"
                   : `à assigner sur ${initialData.summary.totalStops}`}
-            </span>
+              </span>
             </div>
           </div>
         </div>
@@ -348,8 +361,8 @@ export function DeliveryCreationInterface({
                       : "text-zinc-500 dark:text-zinc-500"
                   } transition-colors`}
                 >
-                Ajouter une Tournée
-              </span>
+                  Ajouter une Tournée
+                </span>
               </div>
               {!canAddDelivery && (
                 <p className="text-xs text-center text-zinc-500 dark:text-zinc-400 px-2">
@@ -367,8 +380,18 @@ export function DeliveryCreationInterface({
           <EndClientSelectionModal
             isOpen={isSelectionModalOpen}
             onClose={() => setIsSelectionModalOpen(false)}
-            endClients={initialData.endClients}
-            currentlyAssignedIds={deliveries[selectedDeliveryIndex].endClientIds}
+            endClients={availableEndClients.filter((ec) => {
+              const currentDeliveryIds =
+                deliveries[selectedDeliveryIndex].endClientIds;
+              // Show if assigned to current delivery OR not assigned to any delivery
+              return (
+                currentDeliveryIds.includes(ec.id) ||
+                !assignedEndClientIds.has(ec.id)
+              );
+            })}
+            currentlyAssignedIds={
+              deliveries[selectedDeliveryIndex].endClientIds
+            }
             allAssignedIds={Array.from(assignedEndClientIds)}
             onConfirm={handleEndClientSelectionConfirm}
           />
