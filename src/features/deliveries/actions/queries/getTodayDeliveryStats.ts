@@ -30,6 +30,7 @@ type TodayDeliveryStats = {
   ongoingDelivery: OngoingDelivery | null;
   deliveryRequestStats: DeliveryRequestStats | null;
   todayDeliveries: TodayDeliverySummary[];
+  unassignedStopsCount: number;
 };
 
 export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
@@ -40,6 +41,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         ongoingDelivery: null,
         deliveryRequestStats: null,
         todayDeliveries: [],
+        unassignedStopsCount: 0,
       };
     }
 
@@ -97,6 +99,21 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
       }),
     );
 
+    // If there are deliveries (ongoing or scheduled), check for unassigned stops
+    let unassignedStopsCount = 0;
+    if (todayDeliveries.length > 0) {
+      // Count unassigned delivery request stops for today
+      unassignedStopsCount = await prisma.deliveryRequestStop.count({
+        where: {
+          request: {
+            deliveryCompanyId: ctx.company.id,
+            date: today,
+          },
+          deliveryStopId: null, // Not assigned to any delivery
+        },
+      });
+    }
+
     // If there's an ongoing delivery, return it for backward compatibility
     if (ongoingDelivery) {
       return {
@@ -111,6 +128,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         },
         deliveryRequestStats: null,
         todayDeliveries: todayDeliveriesSummary,
+        unassignedStopsCount,
       };
     }
 
@@ -120,6 +138,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         ongoingDelivery: null,
         deliveryRequestStats: null,
         todayDeliveries: todayDeliveriesSummary,
+        unassignedStopsCount,
       };
     }
 
@@ -130,6 +149,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         ongoingDelivery: null,
         deliveryRequestStats: null,
         todayDeliveries: [],
+        unassignedStopsCount: 0,
       };
     }
 
@@ -159,6 +179,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         ongoingDelivery: null,
         deliveryRequestStats: null,
         todayDeliveries: [],
+        unassignedStopsCount: 0,
       };
     }
 
@@ -179,6 +200,7 @@ export async function getTodayDeliveryStats(): Promise<TodayDeliveryStats> {
         endClientsCount: uniqueEndClientIds.size,
       },
       todayDeliveries: [],
+      unassignedStopsCount: 0,
     };
   });
 }

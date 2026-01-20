@@ -1,11 +1,12 @@
 import {
+  AlertCircleIcon,
   ArrowRightIcon,
   BuildingIcon,
   MapPinIcon,
-  PackageCheckIcon,
+  PackageCheckIcon, TruckIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Badge, Button, Card, CardContent } from "@/features/shared/components";
+import { Button, Card, CardContent } from "@/features/shared/components";
 
 type OngoingDelivery = {
   id: string;
@@ -33,12 +34,14 @@ type DeliveryCalloutProps = {
   ongoingDelivery: OngoingDelivery | null;
   deliveryRequestStats: DeliveryRequestStats | null;
   todayDeliveries: TodayDeliverySummary[];
+  unassignedStopsCount: number;
 };
 
 export function DeliveryCallout({
   ongoingDelivery,
   deliveryRequestStats,
   todayDeliveries,
+  unassignedStopsCount,
 }: DeliveryCalloutProps) {
   // Don't show anything if there's no data
   if (
@@ -51,93 +54,78 @@ export function DeliveryCallout({
 
   // Show today's deliveries if they exist (but no ongoing delivery)
   if (todayDeliveries.length > 0) {
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case "SCHEDULED":
-          return "blue";
-        case "IN_PROGRESS":
-          return "indigo";
-        case "COMPLETED":
-          return "emerald";
-        case "CANCELLED":
-          return "rose";
-        default:
-          return "zinc";
-      }
-    };
-
-    const getStatusLabel = (status: string) => {
-      switch (status) {
-        case "SCHEDULED":
-          return "Planifiée";
-        case "IN_PROGRESS":
-          return "En cours de livraison";
-        case "COMPLETED":
-          return "Terminée";
-        case "CANCELLED":
-          return "Annulée";
-        default:
-          return status;
-      }
-    };
+    // Calculate total stops and completed stops
+    const totalStops = todayDeliveries.reduce(
+      (sum, delivery) => sum + delivery.stopsCount,
+      0,
+    );
+    const completedStops = todayDeliveries.reduce(
+      (sum, delivery) => sum + delivery.completedStopsCount,
+      0,
+    );
 
     return (
-      <Card className="border-l-4 border-l-blue-500">
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-              Livraisons d'aujourd'hui
-            </h3>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {todayDeliveries.length} livraison
-              {todayDeliveries.length > 1 ? "s" : ""}
-            </span>
+      <div className="space-y-4">
+        {/* Alert banner for unassigned stops */}
+        {unassignedStopsCount > 0 && (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-amber-900 dark:text-amber-100">
+                  Arrêts non assignés
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  {unassignedStopsCount} arrêt{unassignedStopsCount > 1 ? "s" : ""} de demandes de
+                  livraison {unassignedStopsCount > 1 ? "ne sont" : "n'est"} pas encore assigné
+                  {unassignedStopsCount > 1 ? "s" : ""} à une livraison. Cliquez sur le bouton
+                  ci-dessous pour les ajouter.
+                </p>
+              </div>
+            </div>
           </div>
+        )}
 
-          <div className="space-y-2">
-            {todayDeliveries.map((delivery) => {
-              const _progress =
-                delivery.stopsCount > 0
-                  ? Math.round(
-                      (delivery.completedStopsCount / delivery.stopsCount) *
-                        100,
-                    )
-                  : 0;
-
-              return (
-                <Link
-                  key={delivery.id}
-                  href={`/deliveries/${delivery.id}`}
-                  className="group block"
-                >
-                  <div className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="font-medium text-zinc-900 dark:text-white">
-                        {delivery.number}
-                      </span>
-                      <Badge color={getStatusColor(delivery.deliveryStatus)}>
-                        {getStatusLabel(delivery.deliveryStatus)}
-                      </Badge>
-                      {delivery.driverName && (
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400 truncate">
-                          {delivery.driverName}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                        {delivery.completedStopsCount}/{delivery.stopsCount}{" "}
-                        arrêts
-                      </span>
-                      <ArrowRightIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 flex-shrink-0" />
-                    </div>
+        {/* Main card */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-4">
+              <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
+                <PackageCheckIcon className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  Livraisons d'aujourd'hui
+                </h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                  Gérez et modifiez vos livraisons en cours
+                </p>
+                <div className="flex items-center gap-6 mt-3">
+                  <div className="flex items-center gap-2">
+                    <TruckIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                      {todayDeliveries.length} livraison
+                      {todayDeliveries.length > 1 ? "s" : ""}
+                    </span>
                   </div>
-                </Link>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                      {completedStops}/{totalStops} arrêts complétés
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <Link href="/deliveries/new">
+                <Button>
+                  Modifier les livraisons
+                  <ArrowRightIcon className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

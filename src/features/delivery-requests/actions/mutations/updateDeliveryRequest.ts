@@ -61,23 +61,12 @@ export async function updateDeliveryRequest({
       );
     }
 
-    // 6. Check if any stops are assigned to any deliveries
-    const hasAssignedDeliveries = existingRequest.stops.some(
-      (stop) => stop.deliveryStopId !== null,
-    );
-
-    if (hasAssignedDeliveries) {
-      throw new Error(
-        "Cannot update request: request has been used to create deliveries. Please contact the delivery company to make changes.",
-      );
-    }
-
-    // 7. Update request
+    // 6. Prepare update data
     const updateData: any = {
       notes: validatedInput.notes,
     };
 
-    // 8. Update stops if provided
+    // 7. Update stops if provided
     if (validatedInput.stops) {
       const existingStopIds = new Set(existingRequest.stops.map((s) => s.id));
       const inputStopIds = new Set(
@@ -88,6 +77,17 @@ export async function updateDeliveryRequest({
       const stopsToDelete = existingRequest.stops.filter(
         (s) => !inputStopIds.has(s.id),
       );
+
+      // Prevent deleting stops that are linked to deliveries
+      const stopsWithDeliveries = stopsToDelete.filter(
+        (stop) => stop.deliveryStopId !== null,
+      );
+
+      if (stopsWithDeliveries.length > 0) {
+        throw new Error(
+          "Cannot remove stops that are linked to deliveries. You can only add new stops.",
+        );
+      }
 
       // Perform update in transaction
       await prisma.$transaction([
@@ -144,7 +144,7 @@ export async function updateDeliveryRequest({
       });
     }
 
-    // 9. Revalidate and redirect
+    // 8. Revalidate and redirect
     revalidatePath("/delivery-requests");
     revalidatePath(`/delivery-requests/${validatedInput.requestId}`);
     redirect("/delivery-requests");

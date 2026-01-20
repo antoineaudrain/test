@@ -48,6 +48,8 @@ export default async function DeliveriesPage() {
       : null,
   }));
 
+  console.log(todayStats)
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -60,6 +62,7 @@ export default async function DeliveriesPage() {
         ongoingDelivery={todayStats.ongoingDelivery}
         deliveryRequestStats={todayStats.deliveryRequestStats}
         todayDeliveries={todayStats.todayDeliveries}
+        unassignedStopsCount={todayStats.unassignedStopsCount}
       />
 
       <DeliveryTable data={data} showDriverFilter={showDriverFilter} />

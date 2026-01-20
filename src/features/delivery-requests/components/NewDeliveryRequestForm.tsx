@@ -289,7 +289,6 @@ export function NewDeliveryRequestForm({
             isSubmitting ||
             isPending ||
             !canModify ||
-            hasAssignedDeliveries ||
             (mode === "edit" && original.hasDelivery && original.selected);
           return (
             <Checkbox
@@ -343,7 +342,6 @@ export function NewDeliveryRequestForm({
                       !original.selected ||
                       isSubmitting ||
                       isPending ||
-                      hasAssignedDeliveries ||
                       original.hasDelivery
                     }
                     onChange={() => toggleType(original.companyId, mode)}
@@ -516,9 +514,9 @@ export function NewDeliveryRequestForm({
                 Demande utilisée pour créer des livraisons
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                Cette demande a été utilisée pour créer des livraisons. Vous ne
-                pouvez plus la modifier. Veuillez contacter l'entreprise de
-                livraison pour apporter des modifications.
+                Cette demande a été utilisée pour créer des livraisons. Vous pouvez
+                ajouter de nouveaux arrêts, mais vous ne pouvez pas supprimer les
+                arrêts existants qui sont liés à des livraisons.
               </p>
             </div>
           </div>
@@ -533,7 +531,7 @@ export function NewDeliveryRequestForm({
               type="date"
               {...register("date")}
               min={Time().format("YYYY-MM-DD")}
-              disabled={mode === "edit" || !canModify || hasAssignedDeliveries}
+              disabled={mode === "edit" || !canModify}
             />
             {errors?.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
           </Field>
@@ -658,11 +656,7 @@ export function NewDeliveryRequestForm({
               {...register("notes")}
               rows={4}
               placeholder="Détaillez les contraintes horaires, accès spécifiques ou infos utiles pour la livraison..."
-              disabled={
-                isSubmitting ||
-                isPending ||
-                (mode === "edit" && hasAssignedDeliveries)
-              }
+              disabled={isSubmitting || isPending}
             />
             {errors?.notes && (
               <ErrorMessage>{errors.notes.message}</ErrorMessage>
@@ -677,7 +671,7 @@ export function NewDeliveryRequestForm({
             type="button"
             onClick={handleCancel}
             className="bg-red-600 hover:bg-red-700 text-white"
-            disabled={isPending || !canModify || hasAssignedDeliveries}
+            disabled={isPending || !canModify}
           >
             Annuler la demande
           </Button>
@@ -685,9 +679,7 @@ export function NewDeliveryRequestForm({
         <Button
           type="submit"
           disabled={
-            isSubmitting ||
-            isPending ||
-            (mode === "edit" && (!canModify || hasAssignedDeliveries))
+            isSubmitting || isPending || (mode === "edit" && !canModify)
           }
         >
           {isSubmitting || isPending
