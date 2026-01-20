@@ -49,17 +49,8 @@ export default async function DeliveryDetailsPage({
     notFound();
   }
 
-  const drivers = await listDriver();
-  const driverOptions = drivers.map((driver) => ({
-    label: `${driver.lastName} ${driver.firstName} - ${driver.vehicle?.plate} - ${driver.vehicle?.model}`,
-    value: driver.id,
-  }));
-
   const { hasPermission: canDeleteDelivery } = await checkPermission(
     (policies) => policies.canDeleteDeliveries(delivery),
-  );
-  const { hasPermission: canEditDeliveryStops } = await checkPermission(
-    (policies) => policies.canUpdateDeliveryStops(delivery),
   );
   const { hasPermission: canEditDeliverySequence } = await checkPermission(
     (policies) => policies.canUpdateDeliverySequence(delivery),
@@ -76,6 +67,14 @@ export default async function DeliveryDetailsPage({
   const { hasPermission: canOpenWaybill } = await checkPermission((policies) =>
     policies.canOpenWaybill(delivery),
   );
+
+  console.log({
+    canEditDeliverySequence,
+    canViewDeliveryStopTable,
+    canStartDelivery,
+    canResumeDelivery,
+    canOpenWaybill,
+  })
 
   const data = delivery.stops.map<DeliveryStopTableRow>((stop) => ({
     id: stop.id,
@@ -158,7 +157,7 @@ export default async function DeliveryDetailsPage({
           </div>
         )}
 
-        {canEditDeliveryStops && <EditDeliveryStopsForm delivery={delivery} />}
+        {/*{canEditDeliveryStops && <EditDeliveryStopsForm delivery={delivery} />}*/}
 
         {canEditDeliverySequence && (
           <EditDeliverySequenceForm delivery={delivery} />
@@ -166,16 +165,16 @@ export default async function DeliveryDetailsPage({
 
         {canViewDeliveryStopTable && <DeliveryStopTable data={data} />}
 
-        {!canEditDeliveryStops && (
-          <div>
-            <Subheading>Notes</Subheading>
-            {delivery.notes ? (
-              <Text>{delivery.notes}</Text>
-            ) : (
-              <Text className="italic opacity-30">Pas de notes</Text>
-            )}
-          </div>
-        )}
+        {/*{!canEditDeliveryStops && (*/}
+        {/*  <div>*/}
+        {/*    <Subheading>Notes</Subheading>*/}
+        {/*    {delivery.notes ? (*/}
+        {/*      <Text>{delivery.notes}</Text>*/}
+        {/*    ) : (*/}
+        {/*      <Text className="italic opacity-30">Pas de notes</Text>*/}
+        {/*    )}*/}
+        {/*  </div>*/}
+        {/*)}*/}
 
         {delivery.deliveryStatus === "COMPLETED" && (
           <div>

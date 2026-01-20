@@ -45,7 +45,7 @@ import { Time } from "@/lib/time";
 export type DeliveryTableRow = {
   id: string;
   number: string | null;
-  deliveryStatus?: DeliveryStatus;
+  deliveryStatus: DeliveryStatus;
   date: Date;
   driver: {
     firstName: string;
@@ -394,7 +394,7 @@ export function DeliveryTable({
             <TableRow
               key={row.id}
               href={`/deliveries/${row.original.id}`}
-              className={clsx(!isToday(row.original.date) && "opacity-50")}
+              className={clsx(["COMPLETED", "CANCELLED"].includes(row.original.deliveryStatus) && "opacity-50")}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

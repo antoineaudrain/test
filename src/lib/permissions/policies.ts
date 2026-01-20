@@ -250,12 +250,10 @@ export class Policies {
   }
 
   canDeleteDeliveries<D extends Delivery>(delivery: D): void {
-    if (!this.isClientCompany())
+    if (!this.isDeliveryCompany())
       throw new PolicyError("Only client can delete deliveries");
-    if (!this.isCurrentCompanyId(delivery.clientCompanyId))
+    if (!this.isCurrentCompanyId(delivery.deliveryCompanyId))
       throw new PolicyError("Can only delete related deliveries");
-    if (isPast(delivery.date))
-      throw new PolicyError("Cannot delete past deliveries");
     if (delivery.deliveryStatus !== "SCHEDULED")
       throw new PolicyError("Can only delete scheduled deliveries");
   }
@@ -274,15 +272,19 @@ export class Policies {
   }
 
   canUpdateDeliverySequence<D extends Delivery>(delivery: D): void {
+    console.log({
+      isClientCompany: this.isDeliveryCompany(),
+      isCurrentCompanyId: this.isCurrentCompanyId(delivery.deliveryCompanyId),
+      isScheduled: delivery.deliveryStatus === "SCHEDULED",
+      deliveryStatus: delivery.deliveryStatus,
+    })
     if (!this.isDeliveryCompany())
       throw new PolicyError("Only delivery can update delivery sequence");
     if (!this.isCurrentCompanyId(delivery.deliveryCompanyId))
       throw new PolicyError(
         "Can only update delivery sequence from the same company",
       );
-    if (isPast(delivery.date))
-      throw new PolicyError("Cannot update past delivery sequence");
-    if (delivery.deliveryStatus && delivery.deliveryStatus !== "SCHEDULED")
+    if (delivery.deliveryStatus !== "SCHEDULED")
       throw new PolicyError("Can only update pending delivery");
   }
 
@@ -292,7 +294,7 @@ export class Policies {
         throw new PolicyError(
           "Can only view delivery stops from the same company",
         );
-      if (!delivery.deliveryStatus || delivery.deliveryStatus === "SCHEDULED")
+      if (delivery.deliveryStatus === "SCHEDULED")
         throw new PolicyError("Can only view started deliveries");
       return;
     }
@@ -302,8 +304,6 @@ export class Policies {
         throw new PolicyError(
           "Can only view delivery stops from the same company",
         );
-      if (!delivery.deliveryStatus || delivery.deliveryStatus === "SCHEDULED")
-        throw new PolicyError("Can only view started deliveries");
       return;
     }
 
@@ -315,10 +315,10 @@ export class Policies {
   ): void {
     if (!this.isDeliveryCompany())
       throw new PolicyError("Only deliveries companies can start delivery");
-    if (!isTodayOrWithinStartWindow(delivery.date))
-      throw new PolicyError(
-        "Can only start delivery on scheduled date or within 24 hours after",
-      );
+    // if (!isTodayOrWithinStartWindow(delivery.date))
+    //   throw new PolicyError(
+    //     "Can only start delivery on scheduled date or within 24 hours after",
+    //   );
     if (delivery.driverId !== this.ctx.user.id)
       throw new PolicyError("Can only start assigned delivery");
     if (delivery.deliveryStatus !== "SCHEDULED")
