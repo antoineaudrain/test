@@ -89,36 +89,33 @@ export async function updateDeliveryRequest({
         );
       }
 
-      // Perform update in transaction
-      await prisma.$transaction([
-        // Delete stops not in input
-        ...(stopsToDelete.length > 0
-          ? [
-              prisma.deliveryRequestStop.deleteMany({
-                where: {
-                  id: { in: stopsToDelete.map((s) => s.id) },
-                },
-              }),
-            ]
-          : []),
+      // Perform updates sequentially
+      // Delete stops not in input
+      if (stopsToDelete.length > 0) {
+        await prisma.deliveryRequestStop.deleteMany({
+          where: {
+            id: { in: stopsToDelete.map((s) => s.id) },
+          },
+        });
+      }
 
-        // Update or new stops
-        ...validatedInput.stops.map((stop) => {
-          if (stop.id && existingStopIds.has(stop.id)) {
-            // Update existing stop
-            return prisma.deliveryRequestStop.update({
-              where: { id: stop.id },
-              data: {
-                sequence: stop.sequence,
-                type: stop.type,
-                notes: stop.notes,
-                addressId: stop.addressId,
-                endClientId: stop.endClientId,
-              },
-            });
-          }
+      // Update or create stops
+      for (const stop of validatedInput.stops) {
+        if (stop.id && existingStopIds.has(stop.id)) {
+          // Update existing stop
+          await prisma.deliveryRequestStop.update({
+            where: { id: stop.id },
+            data: {
+              sequence: stop.sequence,
+              type: stop.type,
+              notes: stop.notes,
+              addressId: stop.addressId,
+              endClientId: stop.endClientId,
+            },
+          });
+        } else {
           // Create new stop
-          return prisma.deliveryRequestStop.create({
+          await prisma.deliveryRequestStop.create({
             data: {
               sequence: stop.sequence,
               type: stop.type,
@@ -128,14 +125,14 @@ export async function updateDeliveryRequest({
               requestId: validatedInput.requestId,
             },
           });
-        }),
+        }
+      }
 
-        // Update request notes
-        prisma.deliveryRequest.update({
-          where: { id: validatedInput.requestId },
-          data: updateData,
-        }),
-      ]);
+      // Update request notes
+      await prisma.deliveryRequest.update({
+        where: { id: validatedInput.requestId },
+        data: updateData,
+      });
     } else {
       // Just update notes
       await prisma.deliveryRequest.update({

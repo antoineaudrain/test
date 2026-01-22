@@ -102,19 +102,78 @@ export async function saveDeliveries(
       }
     }
 
-    // 5. Execute transaction
+    // 5. Execute operations
     let created = 0;
     let updated = 0;
     let deleted = 0;
 
-    await prisma.$transaction(async (tx) => {
-      // A. Delete specified deliveries
-      if (validatedInput.deletedDeliveryIds?.length) {
-        // First, unlink delivery stops from request stops
-        await tx.deliveryRequestStop.updateMany({
+    // A. Delete specified deliveries
+    if (validatedInput.deletedDeliveryIds?.length) {
+      // First, unlink delivery stops from request stops
+      await prisma.deliveryRequestStop.updateMany({
+        where: {
+          deliveryStop: {
+            deliveryId: { in: validatedInput.deletedDeliveryIds },
+          },
+        },
+        data: {
+          deliveryStopId: null,
+        },
+      });
+
+      // Then delete deliveries (cascade will delete stops)
+      const deleteResult = await prisma.delivery.deleteMany({
+        where: {
+          id: { in: validatedInput.deletedDeliveryIds },
+        },
+      });
+
+      deleted = deleteResult.count;
+    }
+
+    // B. Process each delivery
+    for (const deliveryInput of validatedInput.deliveries) {
+      const driver = drivers.find((d) => d.id === deliveryInput.driverId);
+      const vehicle = vehicles.find((v) => v.id === deliveryInput.vehicleId);
+
+      if (!driver) {
+        throw new Error(`Driver ${deliveryInput.driverId} not found`);
+      }
+      if (!vehicle) {
+        throw new Error(`Vehicle ${deliveryInput.vehicleId} not found`);
+      }
+
+      // Get request stops
+      const requestStops = await prisma.deliveryRequestStop.findMany({
+        where: {
+          id: { in: deliveryInput.requestStopIds },
+        },
+        include: {
+          address: true,
+          endClientCompany: true,
+          request: {
+            include: {
+            },
+          },
+        },
+        orderBy: {
+          sequence: "asc",
+        },
+      });
+
+      if (requestStops.length !== deliveryInput.requestStopIds.length) {
+        throw new Error("Some request stops not found");
+      }
+
+      // No need to validate client company - deliveries can have stops from multiple clients
+
+      if (deliveryInput.id) {
+        // UPDATE existing delivery
+        // Unlink old stops
+        await prisma.deliveryRequestStop.updateMany({
           where: {
             deliveryStop: {
-              deliveryId: { in: validatedInput.deletedDeliveryIds },
+              deliveryId: deliveryInput.id,
             },
           },
           data: {
@@ -122,163 +181,102 @@ export async function saveDeliveries(
           },
         });
 
-        // Then delete deliveries (cascade will delete stops)
-        const deleteResult = await tx.delivery.deleteMany({
+        // Delete old stops
+        await prisma.stop.deleteMany({
           where: {
-            id: { in: validatedInput.deletedDeliveryIds },
+            deliveryId: deliveryInput.id,
           },
         });
 
-        deleted = deleteResult.count;
-      }
-
-      // B. Process each delivery
-      for (const deliveryInput of validatedInput.deliveries) {
-        const driver = drivers.find((d) => d.id === deliveryInput.driverId);
-        const vehicle = vehicles.find((v) => v.id === deliveryInput.vehicleId);
-
-        if (!driver) {
-          throw new Error(`Driver ${deliveryInput.driverId} not found`);
-        }
-        if (!vehicle) {
-          throw new Error(`Vehicle ${deliveryInput.vehicleId} not found`);
-        }
-
-        // Get request stops
-        const requestStops = await tx.deliveryRequestStop.findMany({
-          where: {
-            id: { in: deliveryInput.requestStopIds },
-          },
-          include: {
-            address: true,
-            endClientCompany: true,
-            request: {
-              include: {
-              },
-            },
-          },
-          orderBy: {
-            sequence: "asc",
+        // Update delivery
+        await prisma.delivery.update({
+          where: { id: deliveryInput.id },
+          data: {
+            driverId: driver.id,
+            vehicleId: vehicle.id,
+            driverName: `${driver.firstName} ${driver.lastName}`,
+            vehicleLicensePlate: vehicle.plate,
+            notes: deliveryInput.label,
           },
         });
 
-        if (requestStops.length !== deliveryInput.requestStopIds.length) {
-          throw new Error("Some request stops not found");
-        }
+        // Create new stops
+        for (let i = 0; i < requestStops.length; i++) {
+          const requestStop = requestStops[i];
 
-        // No need to validate client company - deliveries can have stops from multiple clients
-
-        if (deliveryInput.id) {
-          // UPDATE existing delivery
-          // Unlink old stops
-          await tx.deliveryRequestStop.updateMany({
-            where: {
-              deliveryStop: {
-                deliveryId: deliveryInput.id,
-              },
-            },
+          const stop = await prisma.stop.create({
             data: {
-              deliveryStopId: null,
-            },
-          });
-
-          // Delete old stops
-          await tx.stop.deleteMany({
-            where: {
               deliveryId: deliveryInput.id,
+              sequence: i + 1,
+              type: requestStop.type,
+              notes: requestStop.notes,
+              addressId: requestStop.addressId,
+              endClientId: requestStop.endClientId,
+              status: StopStatus.PLANNED,
             },
           });
 
-          // Update delivery
-          await tx.delivery.update({
-            where: { id: deliveryInput.id },
-            data: {
-              driverId: driver.id,
-              vehicleId: vehicle.id,
-              driverName: `${driver.firstName} ${driver.lastName}`,
-              vehicleLicensePlate: vehicle.plate,
-              notes: deliveryInput.label,
-            },
+          // Link back to request stop
+          await prisma.deliveryRequestStop.update({
+            where: { id: requestStop.id },
+            data: { deliveryStopId: stop.id },
           });
-
-          // Create new stops
-          for (let i = 0; i < requestStops.length; i++) {
-            const requestStop = requestStops[i];
-
-            const stop = await tx.stop.create({
-              data: {
-                deliveryId: deliveryInput.id,
-                sequence: i + 1,
-                type: requestStop.type,
-                notes: requestStop.notes,
-                addressId: requestStop.addressId,
-                endClientId: requestStop.endClientId,
-                status: StopStatus.PLANNED,
-              },
-            });
-
-            // Link back to request stop
-            await tx.deliveryRequestStop.update({
-              where: { id: requestStop.id },
-              data: { deliveryStopId: stop.id },
-            });
-          }
-
-          updated++;
-        } else {
-          // CREATE new delivery
-          // Generate delivery number
-          const year = Time().format("YY");
-          const count = await tx.delivery.count({
-            where: {
-              number: { startsWith: `TDS${year}-` },
-            },
-          });
-          const sequence = (count + 1).toString().padStart(4, "0");
-          const deliveryNumber = `TDS${year}-${sequence}`;
-
-          // Create delivery
-          const delivery = await tx.delivery.create({
-            data: {
-              number: deliveryNumber,
-              date: dateStringToDate(validatedInput.date),
-              notes: deliveryInput.label,
-              deliveryCompanyId: ctx.company.id,
-              driverId: driver.id,
-              vehicleId: vehicle.id,
-              driverName: `${driver.firstName} ${driver.lastName}`,
-              vehicleLicensePlate: vehicle.plate,
-              deliveryStatus: DeliveryStatus.SCHEDULED,
-            },
-          });
-
-          // Create stops
-          for (let i = 0; i < requestStops.length; i++) {
-            const requestStop = requestStops[i];
-
-            const stop = await tx.stop.create({
-              data: {
-                deliveryId: delivery.id,
-                sequence: i + 1,
-                type: requestStop.type,
-                notes: requestStop.notes,
-                addressId: requestStop.addressId,
-                endClientId: requestStop.endClientId,
-                status: StopStatus.PLANNED,
-              },
-            });
-
-            // Link back to request stop
-            await tx.deliveryRequestStop.update({
-              where: { id: requestStop.id },
-              data: { deliveryStopId: stop.id },
-            });
-          }
-
-          created++;
         }
+
+        updated++;
+      } else {
+        // CREATE new delivery
+        // Generate delivery number
+        const year = Time().format("YY");
+        const count = await prisma.delivery.count({
+          where: {
+            number: { startsWith: `TDS${year}-` },
+          },
+        });
+        const sequence = (count + 1).toString().padStart(4, "0");
+        const deliveryNumber = `TDS${year}-${sequence}`;
+
+        // Create delivery
+        const delivery = await prisma.delivery.create({
+          data: {
+            number: deliveryNumber,
+            date: dateStringToDate(validatedInput.date),
+            notes: deliveryInput.label,
+            deliveryCompanyId: ctx.company.id,
+            driverId: driver.id,
+            vehicleId: vehicle.id,
+            driverName: `${driver.firstName} ${driver.lastName}`,
+            vehicleLicensePlate: vehicle.plate,
+            deliveryStatus: DeliveryStatus.SCHEDULED,
+          },
+        });
+
+        // Create stops
+        for (let i = 0; i < requestStops.length; i++) {
+          const requestStop = requestStops[i];
+
+          const stop = await prisma.stop.create({
+            data: {
+              deliveryId: delivery.id,
+              sequence: i + 1,
+              type: requestStop.type,
+              notes: requestStop.notes,
+              addressId: requestStop.addressId,
+              endClientId: requestStop.endClientId,
+              status: StopStatus.PLANNED,
+            },
+          });
+
+          // Link back to request stop
+          await prisma.deliveryRequestStop.update({
+            where: { id: requestStop.id },
+            data: { deliveryStopId: stop.id },
+          });
+        }
+
+        created++;
       }
-    });
+    }
 
     // 6. Revalidate paths
     revalidatePath("/deliveries");

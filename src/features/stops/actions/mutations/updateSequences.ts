@@ -33,22 +33,21 @@ export async function updateSequences({
 
     if (!delivery) throw new Error("Delivery not found");
 
-    await prisma.$transaction(
-      input.map(({ id, sequence }) =>
-        prisma.stop.update({
-          where: {
-            id,
-            delivery: {
-              id: deliveryId,
-              OR: [
-                { deliveryCompanyId: ctx.company.id },
-              ],
-            },
+    // Update sequences sequentially
+    for (const { id, sequence } of input) {
+      await prisma.stop.update({
+        where: {
+          id,
+          delivery: {
+            id: deliveryId,
+            OR: [
+              { deliveryCompanyId: ctx.company.id },
+            ],
           },
-          data: { sequence },
-        }),
-      ),
-    );
+        },
+        data: { sequence },
+      });
+    }
 
     revalidatePath("/deliveries");
     revalidatePath(`/deliveries/${delivery.id}`);
