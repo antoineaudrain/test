@@ -113,7 +113,6 @@ model Company {
   users                     User[]                @relation("company_users")
   vehicles                  Vehicle[]             @relation("company_vehicles")
   deliveries                Delivery[]            @relation("delivery_delivery_company")
-  clientDeliveries          Delivery[]            @relation("delivery_client_company")
   stops                     Stop[]                @relation("stop_end_client")
   deliveryRequests          DeliveryRequest[]     @relation("client_requests")
   receivedDeliveryRequests  DeliveryRequest[]     @relation("delivery_requests")
@@ -160,13 +159,11 @@ model Delivery {
   startedAt           DateTime?       @map("started_at") @db.Timestamptz(6)
   finishedAt          DateTime?       @map("finished_at") @db.Timestamptz(6)
   deliveryCompanyId   String          @map("delivery_company_id")
-  clientCompanyId     String          @map("client_company_id")
   driverId            String?         @map("driver_id")
   vehicleId           String?         @map("vehicle_id")
 
   // Relations
   deliveryCompany Company  @relation("delivery_delivery_company", fields: [deliveryCompanyId], references: [id], onDelete: Cascade)
-  clientCompany   Company  @relation("delivery_client_company", fields: [clientCompanyId], references: [id], onDelete: Cascade)
   driver          User?    @relation("delivery_driver", fields: [driverId], references: [id], onDelete: SetNull)
   vehicle         Vehicle? @relation("delivery_vehicle", fields: [vehicleId], references: [id], onDelete: SetNull)
   stops           Stop[]   @relation("delivery_stops")

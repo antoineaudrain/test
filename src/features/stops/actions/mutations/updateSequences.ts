@@ -24,7 +24,6 @@ export async function updateSequences({
         id: deliveryId,
         OR: [
           { deliveryCompanyId: ctx.company.id },
-          { clientCompanyId: ctx.company.id },
         ],
       },
       include: {
@@ -43,7 +42,6 @@ export async function updateSequences({
               id: deliveryId,
               OR: [
                 { deliveryCompanyId: ctx.company.id },
-                { clientCompanyId: ctx.company.id },
               ],
             },
           },

@@ -31,7 +31,6 @@ export async function completeStop({
           id: deliveryId,
           OR: [
             { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
           ],
         },
       },
@@ -47,7 +46,6 @@ export async function completeStop({
           id: deliveryId,
           OR: [
             { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
           ],
         },
       },

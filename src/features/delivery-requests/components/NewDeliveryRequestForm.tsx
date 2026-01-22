@@ -480,11 +480,11 @@ export function NewDeliveryRequestForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {submitError && (
-        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-900 dark:text-red-100">{submitError}</p>
-        </div>
-      )}
+      {/*{submitError && (*/}
+      {/*  <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">*/}
+      {/*    <p className="text-red-900 dark:text-red-100">{submitError}</p>*/}
+      {/*  </div>*/}
+      {/*)}*/}
 
       {/* Cutoff Warning */}
       {mode === "edit" && !canModify && cutoffTime && (

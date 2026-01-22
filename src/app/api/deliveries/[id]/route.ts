@@ -16,7 +16,6 @@ export const PATCH = async (
       const delivery = await prisma.delivery.findUnique({
         where: { id: deliveryId },
         include: {
-          clientCompany: true,
           stops: {
             include: {
               endClientCompany: {

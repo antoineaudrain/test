@@ -47,7 +47,6 @@ export type DeliveryRequestWithStops = DeliveryRequestWithRelations<{
       };
     };
   };
-  clientCompany: true;
   deliveryCompany: true;
 }>;
 

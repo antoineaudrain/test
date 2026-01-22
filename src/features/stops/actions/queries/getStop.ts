@@ -27,7 +27,6 @@ export async function getStop({
           id: deliveryId,
           OR: [
             { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
           ],
         },
       },

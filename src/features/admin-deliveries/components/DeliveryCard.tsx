@@ -47,6 +47,7 @@ type DeliveryState = {
   driverId: string;
   vehicleId: string;
   endClientIds: string[];
+  deliveryStatus?: string;
 };
 
 type Driver = {
@@ -88,6 +89,11 @@ export function DeliveryCard({
 }: DeliveryCardProps) {
   const deliveryNumber = deliveryIndex + 1;
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Check if delivery is started or completed
+  const isDisabled =
+    delivery.deliveryStatus === "IN_PROGRESS" ||
+    delivery.deliveryStatus === "COMPLETED";
 
   // Filter to only show drivers who have a vehicle assigned
   const availableDrivers = drivers.filter((d) => d.vehicleId);
@@ -146,7 +152,8 @@ export function DeliveryCard({
           <button
             type="button"
             onClick={() => removeEndClient(row.original.id)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+            disabled={isDisabled}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={`Retirer ${row.original.name}`}
           >
             <XIcon className="h-4 w-4" />
@@ -154,7 +161,7 @@ export function DeliveryCard({
         ),
       }),
     ],
-    [removeEndClient],
+    [removeEndClient, isDisabled],
   );
 
   const table = useReactTable({
@@ -186,6 +193,7 @@ export function DeliveryCard({
           <Button
             outline
             onClick={onRemove}
+            disabled={isDisabled}
             className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 !p-1 touch-manipulation"
           >
             <Trash2Icon className="h-3.5 w-3.5" />
@@ -217,7 +225,8 @@ export function DeliveryCard({
               vehicleId: driver?.vehicleId || "",
             });
           }}
-          className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2.5 sm:py-2 text-sm transition-all dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+          disabled={isDisabled}
+          className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2.5 sm:py-2 text-sm transition-all dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">Sélectionner...</option>
           {availableDrivers.map((driver) => {
@@ -246,7 +255,8 @@ export function DeliveryCard({
       <button
         type="button"
         onClick={onOpenSelectionModal}
-        className="w-full mb-2.5 sm:mb-3 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 py-2.5 sm:py-2 transition-all hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 active:bg-blue-100 dark:active:bg-blue-950/30 touch-manipulation group"
+        disabled={isDisabled}
+        className="w-full mb-2.5 sm:mb-3 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 py-2.5 sm:py-2 transition-all hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 active:bg-blue-100 dark:active:bg-blue-950/30 touch-manipulation group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-zinc-300 dark:disabled:hover:border-zinc-700 disabled:hover:bg-transparent"
       >
         <div className="flex items-center justify-center gap-1.5">
           <PlusIcon className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 shrink-0" />
@@ -361,7 +371,8 @@ export function DeliveryCard({
                       <button
                         type="button"
                         onClick={() => removeEndClient(endClient.id)}
-                        className="shrink-0 p-2 -m-1 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 active:bg-red-100 dark:active:bg-red-950/40 transition-all touch-manipulation"
+                        disabled={isDisabled}
+                        className="shrink-0 p-2 -m-1 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 active:bg-red-100 dark:active:bg-red-950/40 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label={`Retirer ${endClient.name}`}
                       >
                         <XIcon className="h-4 w-4" />

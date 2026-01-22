@@ -56,7 +56,6 @@ type EditDeliverySequenceFormRow = {
 type EditDeliverySequenceFormProps = {
   delivery: DeliveryWithRelations<{
     deliveryCompany: true;
-    clientCompany: true;
     driver: true;
     vehicle: true;
     stops: {

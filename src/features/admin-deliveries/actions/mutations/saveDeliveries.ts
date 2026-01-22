@@ -154,7 +154,6 @@ export async function saveDeliveries(
             endClientCompany: true,
             request: {
               include: {
-                clientCompany: true,
               },
             },
           },
@@ -167,17 +166,7 @@ export async function saveDeliveries(
           throw new Error("Some request stops not found");
         }
 
-        // Get the client company from the first request
-        const clientCompanyId = requestStops[0].request.clientCompanyId;
-
-        // Verify all stops are from same client
-        if (
-          !requestStops.every(
-            (s) => s.request.clientCompanyId === clientCompanyId,
-          )
-        ) {
-          throw new Error("All stops must be from the same client company");
-        }
+        // No need to validate client company - deliveries can have stops from multiple clients
 
         if (deliveryInput.id) {
           // UPDATE existing delivery
@@ -255,7 +244,6 @@ export async function saveDeliveries(
               date: dateStringToDate(validatedInput.date),
               notes: deliveryInput.label,
               deliveryCompanyId: ctx.company.id,
-              clientCompanyId,
               driverId: driver.id,
               vehicleId: vehicle.id,
               driverName: `${driver.firstName} ${driver.lastName}`,

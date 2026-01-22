@@ -9,11 +9,6 @@ import { type WaybillData, WaybillGenerator } from "@/lib/waybill";
 type WaybillButtonProps = {
   delivery: DeliveryWithRelations<{
     deliveryCompany: true;
-    clientCompany: {
-      include: {
-        address: true;
-      };
-    };
     driver: true;
     vehicle: true;
     stops: {
@@ -23,6 +18,7 @@ type WaybillButtonProps = {
             address: true;
           };
         };
+        address: true;
       };
     };
   }>;
@@ -51,10 +47,8 @@ export function WaybillButton({ delivery }: WaybillButtonProps) {
         services: "Prothèses dentaires",
         pickup: {
           client: {
-            name: delivery.clientCompany?.name ?? "",
-            address: formatAddress(
-              delivery.clientCompany?.address?.formattedAddress,
-            ),
+            name: "Multiple Clients",
+            address: "",
           },
           onsiteArrival: startedAt,
           onsiteDeparture: startedAt,
@@ -65,10 +59,8 @@ export function WaybillButton({ delivery }: WaybillButtonProps) {
         },
         delivery: {
           client: {
-            name: delivery.clientCompany?.name ?? "",
-            address: formatAddress(
-              delivery.clientCompany?.address?.formattedAddress,
-            ),
+            name: "Multiple Clients",
+            address: "",
           },
           onsiteArrival: finishedAt,
           onsiteDeparture: finishedAt,

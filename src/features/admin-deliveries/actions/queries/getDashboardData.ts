@@ -10,7 +10,6 @@ type DeliveryWithRelations = Prisma.DeliveryGetPayload<{
     driver: true;
     vehicle: true;
     stops: true;
-    clientCompany: true;
   };
 }>;
 
@@ -52,7 +51,6 @@ export async function getDashboardData(): Promise<DashboardData> {
         driver: true,
         vehicle: true,
         stops: true,
-        clientCompany: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -71,7 +69,6 @@ export async function getDashboardData(): Promise<DashboardData> {
             endClientCompany: true,
           },
         },
-        clientCompany: true,
       },
     });
 
@@ -102,7 +99,6 @@ export async function getDashboardData(): Promise<DashboardData> {
             endClientCompany: true,
           },
         },
-        clientCompany: true,
       },
     });
 

@@ -74,7 +74,6 @@ export function PastDeliveriesTable() {
           <TableRow>
             <TableHeader>Numéro</TableHeader>
             <TableHeader>Date</TableHeader>
-            <TableHeader>Client</TableHeader>
             <TableHeader>Chauffeur</TableHeader>
             <TableHeader>Véhicule</TableHeader>
             <TableHeader>Arrêts</TableHeader>
@@ -87,7 +86,6 @@ export function PastDeliveriesTable() {
             <TableRow key={delivery.id}>
               <TableCell className="font-medium">{delivery.number}</TableCell>
               <TableCell>{Time(delivery.date).format("DD/MM/YYYY")}</TableCell>
-              <TableCell>{delivery.clientCompany?.name}</TableCell>
               <TableCell>
                 {delivery.driver
                   ? `${delivery.driver.firstName} ${delivery.driver.lastName}`

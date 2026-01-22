@@ -21,16 +21,24 @@ export async function startDelivery({
     const delivery = await prisma.delivery.findFirst({
       where: {
         id: deliveryId,
-        OR: [
-          { deliveryCompanyId: ctx.company.id },
-          { clientCompanyId: ctx.company.id },
-        ],
+        deliveryCompanyId: ctx.company.id,
       },
       include: {
         stops: {
           where: { status: StopStatus.PLANNED },
           orderBy: { sequence: "asc" },
           take: 1,
+          include: {
+            endClientCompany: {
+              include: {
+                parentCompany: {
+                  include: {
+                    clientSettings: true,
+                  },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -42,9 +50,9 @@ export async function startDelivery({
     if (!upcomingStop) throw new Error("No upcoming stop found");
 
     // Check cutoff time - drivers can only start after cutoff
-    const clientSettings = await prisma.clientSettings.findUnique({
-      where: { clientCompanyId: delivery.clientCompanyId },
-    });
+    // For deliveries with multiple client companies, check the earliest cutoff time
+    const clientCompany = upcomingStop.endClientCompany?.parentCompany;
+    const clientSettings = clientCompany?.clientSettings;
 
     if (clientSettings?.cutoffTime) {
       const [hours, minutes] = clientSettings.cutoffTime.split(":").map(Number);

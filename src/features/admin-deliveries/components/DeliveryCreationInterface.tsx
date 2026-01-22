@@ -23,6 +23,7 @@ type DeliveryState = {
   driverId: string;
   vehicleId: string;
   endClientIds: string[];
+  deliveryStatus?: string;
 };
 
 type DeliveryCreationInterfaceProps = {
@@ -47,6 +48,7 @@ export function DeliveryCreationInterface({
       label: d.notes || `Tournée ${index + 1}`,
       driverId: d.driverId || "",
       vehicleId: d.vehicleId || "",
+      deliveryStatus: d.deliveryStatus,
       endClientIds: d.stops
         .map((s) =>
           s.sourceRequestStopId
@@ -131,9 +133,14 @@ export function DeliveryCreationInterface({
 
     startTransition(async () => {
       try {
-        // Filter out empty deliveries
+        // Filter out empty deliveries and deliveries that are IN_PROGRESS or COMPLETED
         const nonEmptyDeliveries = deliveries.filter(
-          (d) => d.endClientIds.length > 0 && d.driverId && d.vehicleId,
+          (d) =>
+            d.endClientIds.length > 0 &&
+            d.driverId &&
+            d.vehicleId &&
+            d.deliveryStatus !== "IN_PROGRESS" &&
+            d.deliveryStatus !== "COMPLETED",
         );
 
         // Map to request stop IDs
@@ -154,11 +161,27 @@ export function DeliveryCreationInterface({
           };
         });
 
+        // Filter deleted delivery IDs to exclude IN_PROGRESS or COMPLETED deliveries
+        const validDeletedDeliveryIds = deletedDeliveryIds.filter(
+          (deletedId) => {
+            const originalDelivery = initialData.existingDeliveries.find(
+              (d) => d.id === deletedId,
+            );
+            return (
+              originalDelivery &&
+              originalDelivery.deliveryStatus !== "IN_PROGRESS" &&
+              originalDelivery.deliveryStatus !== "COMPLETED"
+            );
+          },
+        );
+
         await saveDeliveries({
           date: initialData.date,
           deliveries: deliveriesToSave,
           deletedDeliveryIds:
-            deletedDeliveryIds.length > 0 ? deletedDeliveryIds : undefined,
+            validDeletedDeliveryIds.length > 0
+              ? validDeletedDeliveryIds
+              : undefined,
         });
 
         router.push("/deliveries");

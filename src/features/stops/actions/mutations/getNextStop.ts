@@ -15,15 +15,16 @@ export async function startNextStop({ deliveryId }: StartNextStopProps) {
         id: deliveryId,
         OR: [
           { deliveryCompanyId: ctx.company.id },
-          { clientCompanyId: ctx.company.id },
         ],
       },
       include: {
         driver: true,
-        clientCompany: true,
         stops: {
           where: {
             status: StopStatus.PLANNED,
+          },
+          include: {
+            endClientCompany: true,
           },
           orderBy: {
             sequence: "asc",

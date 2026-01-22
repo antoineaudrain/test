@@ -232,20 +232,28 @@ export class Policies {
       throw new PolicyError("Only client companies can new client");
   }
 
-  canViewDelivery<D extends Delivery>(delivery: D): void {
+  canViewDelivery<
+    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+  >(delivery: D): void {
     if (
       this.isDeliveryCompany() &&
       !this.isCurrentCompanyId(delivery.deliveryCompanyId)
     )
       throw new PolicyError("Can only view related deliveries");
-    if (
-      this.isClientCompany() &&
-      !this.isCurrentCompanyId(delivery.clientCompanyId)
-    )
-      throw new PolicyError("Can only view related deliveries");
+
+    if (this.isClientCompany()) {
+      // Check if any stop in the delivery goes to an end client that belongs to this client company
+      const hasRelevantStops = delivery.stops.some(
+        (stop) => stop.endClientCompany?.parentId === this.ctx.company.id,
+      );
+      if (!hasRelevantStops)
+        throw new PolicyError("Can only view related deliveries");
+    }
   }
 
-  canViewDeliveries<D extends Delivery>(deliveries: D[]): void {
+  canViewDeliveries<
+    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+  >(deliveries: D[]): void {
     deliveries.forEach((delivery) => this.canViewDelivery(delivery));
   }
 
@@ -258,13 +266,21 @@ export class Policies {
       throw new PolicyError("Can only delete scheduled deliveries");
   }
 
-  canUpdateDeliveryStops<D extends Delivery>(delivery: D): void {
+  canUpdateDeliveryStops<
+    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+  >(delivery: D): void {
     if (!this.isClientCompany())
       throw new PolicyError("Only client can update delivery stops");
-    if (!this.isCurrentCompanyId(delivery.clientCompanyId))
+
+    // Check if any stop in the delivery goes to an end client that belongs to this client company
+    const hasRelevantStops = delivery.stops.some(
+      (stop) => stop.endClientCompany?.parentId === this.ctx.company.id,
+    );
+    if (!hasRelevantStops)
       throw new PolicyError(
         "Can only update delivery stops from the same company",
       );
+
     if (isPast(delivery.date))
       throw new PolicyError("Cannot update past delivery stops");
     if (delivery.deliveryStatus && delivery.deliveryStatus !== "SCHEDULED")
@@ -288,7 +304,9 @@ export class Policies {
       throw new PolicyError("Can only update pending delivery");
   }
 
-  canViewDeliveryStopTable<D extends Delivery>(delivery: D): void {
+  canViewDeliveryStopTable<
+    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+  >(delivery: D): void {
     if (this.isDeliveryCompany()) {
       if (!this.isCurrentCompanyId(delivery.deliveryCompanyId))
         throw new PolicyError(
@@ -300,7 +318,11 @@ export class Policies {
     }
 
     if (this.isClientCompany()) {
-      if (!this.isCurrentCompanyId(delivery.clientCompanyId))
+      // Check if any stop in the delivery goes to an end client that belongs to this client company
+      const hasRelevantStops = delivery.stops.some(
+        (stop) => stop.endClientCompany?.parentId === this.ctx.company.id,
+      );
+      if (!hasRelevantStops)
         throw new PolicyError(
           "Can only view delivery stops from the same company",
         );
@@ -406,6 +428,17 @@ export class Policies {
     if (!this.isClientCompany())
       throw new PolicyError(
         "Only client companies can cancel delivery requests",
+      );
+  }
+
+  canViewDeliveryRequest<T extends { clientCompanyId: string }>(
+    request: T,
+  ): void {
+    if (!this.isClientCompany())
+      throw new PolicyError("Only client companies can view delivery requests");
+    if (!this.isCurrentCompanyId(request.clientCompanyId))
+      throw new PolicyError(
+        "Can only view delivery requests from the same company",
       );
   }
 

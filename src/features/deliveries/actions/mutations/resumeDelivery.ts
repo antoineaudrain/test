@@ -17,10 +17,7 @@ export async function resumeDelivery({
     const delivery = await prisma.delivery.findUnique({
       where: {
         id: deliveryId,
-        OR: [
-          { deliveryCompanyId: ctx.company.id },
-          { clientCompanyId: ctx.company.id },
-        ],
+        deliveryCompanyId: ctx.company.id,
       },
       include: {
         stops: {
@@ -53,10 +50,6 @@ export async function resumeDelivery({
         id: upcomingStop.id,
         delivery: {
           id: deliveryId,
-          OR: [
-            { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
-          ],
         },
       },
       data: {

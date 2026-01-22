@@ -74,7 +74,6 @@ export const POST = async (req: Request) => {
           date: dateStringToDate(deliveryData.date),
           notes: deliveryData.notes,
           deliveryCompany: { connect: { id: ctx.company.parentCompany.id } },
-          clientCompany: { connect: { id: ctx.company.id } },
           stops: { create: stopsData },
         },
       });

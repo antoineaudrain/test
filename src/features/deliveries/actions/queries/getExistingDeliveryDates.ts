@@ -8,7 +8,6 @@ export async function getExistingDeliveryDates(): Promise<Date[]> {
   return withAuth<Date[]>(async (ctx) => {
     const deliveries = await prisma.delivery.findMany({
       where: {
-        clientCompanyId: ctx.company.id,
         date: {
           gte: startOfToday(),
         },

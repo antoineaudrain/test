@@ -72,7 +72,6 @@ export async function getDeliveryCreationData(
         },
         request: {
           include: {
-            clientCompany: true,
           },
         },
       },
@@ -126,7 +125,6 @@ export async function getDeliveryCreationData(
             sequence: "asc",
           },
         },
-        clientCompany: true,
       },
       orderBy: {
         createdAt: "asc",

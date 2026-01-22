@@ -6,7 +6,6 @@ import { withAuth } from "@/lib/permissions";
 
 export type ListDeliveryReturn = DeliveryWithRelations<{
   deliveryCompany: true;
-  clientCompany: true;
   driver: true;
   vehicle: true;
   stops: {
@@ -21,20 +20,29 @@ export async function listDelivery() {
     // Build where clause based on user role
     const whereClause: any = {};
 
-    // Non-admin members can only see their own deliveries
-    if (
-      policies.isDeliveryCompany() &&
-      !policies.isAdmin() &&
-      !policies.isManager()
-    ) {
-      whereClause.driverId = ctx.user.id;
+    // Filter by company based on company type
+    if (policies.isDeliveryCompany()) {
+      whereClause.deliveryCompanyId = ctx.company.id;
+
+      // Non-admin members can only see their own deliveries
+      if (!policies.isAdmin() && !policies.isManager()) {
+        whereClause.driverId = ctx.user.id;
+      }
+    } else if (policies.isClientCompany()) {
+      // For client companies, filter deliveries that have stops going to their end clients
+      whereClause.stops = {
+        some: {
+          endClientCompany: {
+            parentId: ctx.company.id,
+          },
+        },
+      };
     }
 
     const deliveries = await prisma.delivery.findMany({
       where: whereClause,
       include: {
         deliveryCompany: true,
-        clientCompany: true,
         driver: true,
         vehicle: true,
         stops: {

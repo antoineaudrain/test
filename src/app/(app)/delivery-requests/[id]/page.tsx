@@ -2,10 +2,10 @@ import { ChevronLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listClients } from "@/features/clients/actions/queries/listClients";
+import { getDeliveryRequest } from "@/features/delivery-requests/actions/queries/getDeliveryRequest";
 import { getExistingDeliveryRequestDates } from "@/features/delivery-requests/actions/queries/getExistingDeliveryRequestDates";
 import { NewDeliveryRequestForm } from "@/features/delivery-requests/components/NewDeliveryRequestForm";
 import { Heading, Link } from "@/features/shared/components";
-import prisma from "@/lib/database/prisma";
 import { requireAuth } from "@/lib/permissions";
 
 type PageProps = {
@@ -21,27 +21,7 @@ export default async function DeliveryRequestDetailPage({ params }: PageProps) {
   await requireAuth();
   const { id } = await params;
 
-  const request = await prisma.deliveryRequest.findUnique({
-    where: { id },
-    include: {
-      stops: {
-        include: {
-          address: true,
-          endClientCompany: true,
-          deliveryStop: {
-            include: {
-              delivery: true,
-            },
-          },
-        },
-        orderBy: {
-          sequence: "asc",
-        },
-      },
-      clientCompany: true,
-      deliveryCompany: true,
-    },
-  });
+  const request = await getDeliveryRequest({ requestId: id });
 
   if (!request) {
     notFound();

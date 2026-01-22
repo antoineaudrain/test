@@ -21,7 +21,6 @@ export async function updateDelivery({
     const delivery = await prisma.delivery.findUnique({
       where: { id: deliveryId },
       include: {
-        clientCompany: true,
         stops: {
           include: {
             endClientCompany: {

@@ -14,7 +14,6 @@ type DeliveryWithRelations = Prisma.DeliveryGetPayload<{
     driver: true;
     vehicle: true;
     stops: true;
-    clientCompany: true;
   };
 }>;
 
@@ -85,7 +84,6 @@ export async function getPastDeliveries(
         driver: true,
         vehicle: true,
         stops: true,
-        clientCompany: true,
       },
       orderBy: {
         date: "desc",

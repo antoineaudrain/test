@@ -31,7 +31,6 @@ export async function failStop({
           id: deliveryId,
           OR: [
             { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
           ],
         },
       },
@@ -47,7 +46,6 @@ export async function failStop({
           id: deliveryId,
           OR: [
             { deliveryCompanyId: ctx.company.id },
-            { clientCompanyId: ctx.company.id },
           ],
         },
       },

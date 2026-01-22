@@ -31,7 +31,6 @@ export async function listDeliveryRequests(): Promise<
             sequence: "asc",
           },
         },
-        clientCompany: true,
         deliveryCompany: true,
       },
       orderBy: {

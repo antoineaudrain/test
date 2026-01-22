@@ -43,7 +43,6 @@ import {
 type EditDeliveryFormProps = {
   delivery: DeliveryWithRelations<{
     deliveryCompany: true;
-    clientCompany: true;
     driver: true;
     vehicle: true;
     stops: {

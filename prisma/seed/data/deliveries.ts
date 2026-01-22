@@ -87,7 +87,6 @@ export const DELIVERIES: Array<
         driverName: `${driver1.firstName} ${driver1.lastName}`,
         vehicleLicensePlate: driver1Vehicle.plate,
         deliveryCompany: { connect: { id: deliveryCompany.id } },
-        clientCompany: { connect: { id: clientCompany.id } },
         driver: { connect: { id: driver1.id } },
         vehicle: { connect: { id: driver1Vehicle.id } },
         stops: {
@@ -127,7 +126,6 @@ export const DELIVERIES: Array<
             ? driver2Vehicle.plate
             : driver1Vehicle.plate,
         deliveryCompany: { connect: { id: deliveryCompany.id } },
-        clientCompany: { connect: { id: clientCompany.id } },
         driver: {
           connect: { id: driver2 && driver2Vehicle ? driver2.id : driver1.id },
         },
@@ -193,7 +191,6 @@ export const DELIVERIES: Array<
         driverName: `${driver1.firstName} ${driver1.lastName}`,
         vehicleLicensePlate: driver1Vehicle.plate,
         deliveryCompany: { connect: { id: deliveryCompany.id } },
-        clientCompany: { connect: { id: clientCompany.id } },
         driver: { connect: { id: driver1.id } },
         vehicle: { connect: { id: driver1Vehicle.id } },
         stops: {
@@ -227,7 +224,6 @@ export const DELIVERIES: Array<
         driverName: `${driver1.firstName} ${driver1.lastName}`,
         vehicleLicensePlate: driver1Vehicle.plate,
         deliveryCompany: { connect: { id: deliveryCompany.id } },
-        clientCompany: { connect: { id: clientCompany.id } },
         driver: { connect: { id: driver1.id } },
         vehicle: { connect: { id: driver1Vehicle.id } },
         startedAt: dateStringToDate(
@@ -287,7 +283,6 @@ export const DELIVERIES: Array<
         notes: "Livraison planifiée pour la semaine prochaine",
         deliveryStatus: DeliveryStatus.SCHEDULED,
         deliveryCompany: { connect: { id: deliveryCompany.id } },
-        clientCompany: { connect: { id: clientCompany.id } },
         stops: {
           create: [
             {

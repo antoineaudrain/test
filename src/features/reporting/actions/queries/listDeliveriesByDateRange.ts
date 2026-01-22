@@ -8,7 +8,6 @@ import { dateStringToDate } from "@/lib/time";
 
 export type ListDeliveriesByDateRangeReturn = DeliveryWithRelations<{
   deliveryCompany: true;
-  clientCompany: true;
   driver: true;
   vehicle: true;
   stops: {
@@ -44,7 +43,6 @@ export async function listDeliveriesByDateRange({
       },
       // Client companies can only see their own deliveries
       ...(policies.isClientCompany() && {
-        clientCompanyId: ctx.company.id,
       }),
       // Delivery companies can see all deliveries
       ...(policies.isDeliveryCompany() && {
@@ -56,7 +54,6 @@ export async function listDeliveriesByDateRange({
       where: whereClause,
       include: {
         deliveryCompany: true,
-        clientCompany: true,
         driver: true,
         vehicle: true,
         stops: {
