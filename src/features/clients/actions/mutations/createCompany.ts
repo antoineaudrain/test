@@ -92,22 +92,22 @@ export async function createCompany({
           process.env.NEXT_PUBLIC_APP_URL || "https://app.tds-transports.fr";
         const activationUrl = `${baseUrl}/sign-in?ticket=${signInToken.token}`;
 
-        await sendNotificationEmail({
-          email: ownerEmail,
-          subject: "Activez votre compte TDS Transports",
-          template: AccountActivationNotification({
-            firstName: ownerFirstName,
-            lastName: ownerLastName,
-            companyName: companyInput.name,
-            activationUrl,
-          }),
-          meta: {
-            source: "company-creation",
-            type: "account-activation",
-            priority: "high",
-            userId: clerkUser.id,
-          },
-        });
+        // await sendNotificationEmail({
+        //   email: ownerEmail,
+        //   subject: "Activez votre compte TDS Transports",
+        //   template: AccountActivationNotification({
+        //     firstName: ownerFirstName,
+        //     lastName: ownerLastName,
+        //     companyName: companyInput.name,
+        //     activationUrl,
+        //   }),
+        //   meta: {
+        //     source: "company-creation",
+        //     type: "account-activation",
+        //     priority: "high",
+        //     userId: clerkUser.id,
+        //   },
+        // });
       }
 
       const company = await prisma.company.create({
