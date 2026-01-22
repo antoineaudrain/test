@@ -80,7 +80,7 @@ export function EditAddressForm({
 
   const displayValue = useCallback(
     (address: MapboxSuggestedAddress | null) =>
-      address ? `${address.name}, ${address.place_formatted}` : inputValue,
+      address ? address.name : inputValue,
     [inputValue],
   );
 
