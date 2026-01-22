@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import { AlertCircleIcon } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { memo, useEffect, useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import UserEmpty from "@/assets/illustrations/user-empty.svg";
@@ -129,6 +129,32 @@ const createDeliveryRequestFormSchemaWithExistingDates = (
   });
 
 const columnHelper = createColumnHelper<CreateDeliveryRequestStopFormInput>();
+
+// Memoized component to prevent re-renders on every keystroke
+const NotesCell = memo(
+  ({
+    stopIndex,
+    value,
+    onChange,
+    disabled,
+  }: {
+    stopIndex: number;
+    value: string;
+    onChange: (value: string) => void;
+    disabled: boolean;
+  }) => {
+    return (
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={2}
+        placeholder="Notes spécifiques..."
+        disabled={disabled}
+        className="min-w-[200px]"
+      />
+    );
+  },
+);
 
 export function NewDeliveryRequestForm({
   mode,
@@ -284,7 +310,6 @@ export function NewDeliveryRequestForm({
         header: () => <Text>Sélection</Text>,
         footer: () => <Text>Total: {stops.length}</Text>,
         cell: ({ row: { original } }) => {
-          const stopIndex = getStopIndex(original.companyId);
           const isDisabled =
             isSubmitting ||
             isPending ||
@@ -292,7 +317,7 @@ export function NewDeliveryRequestForm({
             (mode === "edit" && original.hasDelivery && original.selected);
           return (
             <Checkbox
-              checked={stops[stopIndex].selected ?? false}
+              checked={original.selected ?? false}
               disabled={isDisabled}
               onChange={() => toggleSelection(original.companyId)}
             />
@@ -314,17 +339,17 @@ export function NewDeliveryRequestForm({
           });
         },
       }),
-      ...(["PICKUP", "DROPOFF"] as const).map((mode) =>
+      ...(["PICKUP", "DROPOFF"] as const).map((typeMode) =>
         columnHelper.display({
-          id: mode.toLowerCase(),
+          id: typeMode.toLowerCase(),
           header: () => (
-            <Text>{mode === "PICKUP" ? "Collecte" : "Livraison"}</Text>
+            <Text>{typeMode === "PICKUP" ? "Collecte" : "Livraison"}</Text>
           ),
           footer: () => (
             <Text>
               {
                 stops.filter(
-                  (s) => s.selected && [mode, "BOTH"].includes(s.type ?? ""),
+                  (s) => s.selected && [typeMode, "BOTH"].includes(s.type ?? ""),
                 ).length
               }
             </Text>
@@ -337,14 +362,14 @@ export function NewDeliveryRequestForm({
               <div className="flex flex-col gap-1">
                 <div className={clsx("flex items-center gap-2 p-1 rounded")}>
                   <Checkbox
-                    checked={[mode, "BOTH"].includes(original.type ?? "")}
+                    checked={[typeMode, "BOTH"].includes(original.type ?? "")}
                     disabled={
                       !original.selected ||
                       isSubmitting ||
                       isPending ||
                       original.hasDelivery
                     }
-                    onChange={() => toggleType(original.companyId, mode)}
+                    onChange={() => toggleType(original.companyId, typeMode)}
                   />
                 </div>
                 {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -356,19 +381,33 @@ export function NewDeliveryRequestForm({
       ),
       columnHelper.accessor("notes", {
         header: () => <Text>Notes</Text>,
-        cell: (props) => <Text>{props.getValue()}</Text>,
+        cell: ({ row: { original } }) => {
+          const stopIndex = getStopIndex(original.companyId);
+          const isDisabled =
+            !original.selected ||
+            isSubmitting ||
+            isPending ||
+            !canModify ||
+            (mode === "edit" && original.hasDelivery);
+
+          return (
+            <NotesCell
+              stopIndex={stopIndex}
+              value={original.notes ?? ""}
+              onChange={(value) => setValue(`stops.${stopIndex}.notes`, value)}
+              disabled={!!isDisabled}
+            />
+          );
+        },
         enableSorting: false,
       }),
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      stops,
       isSubmitting,
       isPending,
       canModify,
       mode,
-      getStopIndex,
-      toggleSelection,
-      toggleType,
     ],
   );
 
