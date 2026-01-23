@@ -287,9 +287,11 @@ export function NewDeliveryRequestForm({
   };
 
   const toggleType = (companyId: string, mode: "PICKUP" | "DROPOFF") => {
-    const idx = getStopIndex(companyId);
+    // Get fresh stops data from form state
+    const currentStops = watch("stops") ?? [];
+    const idx = currentStops.findIndex((s) => s.companyId === companyId);
     if (idx < 0) return;
-    const current = stops[idx].type;
+    const current = currentStops[idx].type;
     const modes = new Set(
       current === "BOTH" ? ["PICKUP", "DROPOFF"] : current ? [current] : [],
     );
@@ -422,7 +424,6 @@ export function NewDeliveryRequestForm({
 
   const onSubmit = async (input: CreateDeliveryRequestFormInput) => {
     try {
-      console.log("Form submitted with input:", input);
       setSubmitError(null);
 
       // Transform form data to match CreateDeliveryRequestInput/UpdateDeliveryRequestInput schema
@@ -443,8 +444,6 @@ export function NewDeliveryRequestForm({
           };
         });
 
-      console.log("Selected stops:", selectedStops);
-
       if (selectedStops.length === 0) {
         setSubmitError("Au moins un arrêt doit être sélectionné");
         return;
@@ -452,9 +451,7 @@ export function NewDeliveryRequestForm({
 
       startTransition(async () => {
         try {
-          console.log("Starting transition, mode:", mode);
           if (mode === "create") {
-            console.log("Calling createDeliveryRequest");
             await createDeliveryRequest({
               input: {
                 date: input.date,
@@ -462,9 +459,7 @@ export function NewDeliveryRequestForm({
                 stops: selectedStops,
               },
             });
-            console.log("createDeliveryRequest completed");
           } else if (mode === "edit" && request) {
-            console.log("Calling updateDeliveryRequest");
             await updateDeliveryRequest({
               input: {
                 requestId: request.id,
@@ -472,7 +467,6 @@ export function NewDeliveryRequestForm({
                 stops: selectedStops,
               },
             });
-            console.log("updateDeliveryRequest completed");
           }
         } catch (err) {
           console.error("Error in transition:", err);

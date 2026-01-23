@@ -44,11 +44,8 @@ export function CreateCompanyForm({
     resolver: zodResolver(schema) as any,
   });
 
-  console.log({ errors })
-
   const onSubmit = async (input: CreateClientCompanyFormInput) => {
     try {
-      console.log({ input })
       await createCompany({ input });
     } catch (error) {
       console.error("Failed to new company:", error);

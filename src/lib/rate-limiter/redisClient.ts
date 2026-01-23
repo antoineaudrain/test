@@ -40,7 +40,6 @@ export const getRedisClient = (): RedisClientType | null => {
         .connect()
         .then(() => {
           client = tempClient as RedisClientType;
-          console.log("Redis connected successfully");
         })
         .catch((err) => {
           console.warn(
