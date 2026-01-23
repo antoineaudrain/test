@@ -35,16 +35,24 @@ export default async function DeliveryStopPage({
     notFound();
   }
 
-  const marker = {
-    longitude: parseFloat(String(stop.address.longitude)),
-    latitude: parseFloat(String(stop.address.latitude)),
-  };
+  // Build markers array only if coordinates are available
+  const markers =
+    stop.address.longitude != null && stop.address.latitude != null
+      ? [
+          {
+            longitude: parseFloat(String(stop.address.longitude)),
+            latitude: parseFloat(String(stop.address.latitude)),
+          },
+        ]
+      : [];
+
+  const hasCoordinates = markers.length > 0;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="w-full max-w-none">
         <div className="relative w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[480px] rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
-          <DeliveryMap markers={[marker]} />
+          <DeliveryMap markers={markers} />
         </div>
       </div>
 
@@ -52,6 +60,15 @@ export default async function DeliveryStopPage({
         <div className="flex flex-col gap-2">
           <Heading>{stop.endClientCompany.name}</Heading>
           <Subheading>{stop.address.formattedAddress}</Subheading>
+          {!hasCoordinates && (
+            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-950/20 px-3 py-2 rounded-md border border-amber-200 dark:border-amber-800">
+              <span className="text-base">⚠️</span>
+              <span>
+                Adresse saisie manuellement. Utilisez la navigation pour vous
+                guider.
+              </span>
+            </div>
+          )}
         </div>
 
         {stop.status === StopStatus.EN_ROUTE && (

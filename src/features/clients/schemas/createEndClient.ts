@@ -3,7 +3,7 @@ import { UpdateAddressSchema } from "@/features/addresses/schemas/updateAddress"
 
 export const CreateEndClientFormSchema = z.object({
   name: z.string().min(1, { message: "Le nom est requis" }),
-  address: UpdateAddressSchema.required(),
+  address: UpdateAddressSchema,
 });
 
 export type CreateEndClientFormInput = z.infer<

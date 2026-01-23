@@ -80,10 +80,17 @@ export default async function DeliveryDetailsPage({
     completedAt: stop.completedAt,
   }));
 
-  const markers = delivery.stops.map((stop) => ({
-    longitude: parseFloat(String(stop.endClientCompany.address.longitude)),
-    latitude: parseFloat(String(stop.endClientCompany.address.latitude)),
-  }));
+  // Build markers array only for stops with valid coordinates
+  const markers = delivery.stops
+    .filter(
+      (stop) =>
+        stop.endClientCompany.address.longitude != null &&
+        stop.endClientCompany.address.latitude != null,
+    )
+    .map((stop) => ({
+      longitude: parseFloat(String(stop.endClientCompany.address.longitude)),
+      latitude: parseFloat(String(stop.endClientCompany.address.latitude)),
+    }));
 
   return (
     <>

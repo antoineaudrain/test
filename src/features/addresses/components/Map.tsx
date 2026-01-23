@@ -1,6 +1,6 @@
 "use client";
 
-import { PackageIcon } from "lucide-react";
+import { MapPinOffIcon, PackageIcon } from "lucide-react";
 import { useCallback, useRef } from "react";
 import MapGL, {
   type MapRef,
@@ -38,6 +38,17 @@ export function DeliveryMap({ markers }: MapProps) {
       maxZoom: 15,
     });
   }, [markers]);
+
+  // Show placeholder when no valid coordinates are available
+  if (!markers.length) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+        <MapPinOffIcon className="h-12 w-12 mb-3 opacity-50" />
+        <p className="text-sm font-medium">Carte indisponible</p>
+        <p className="text-xs mt-1">Coordonnées GPS manquantes</p>
+      </div>
+    );
+  }
 
   return (
     <MapGL

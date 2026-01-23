@@ -37,6 +37,7 @@ export function UpdateClientForm({
     control,
     register,
     handleSubmit,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<UpdateClientFormInput>({
     resolver: zodResolver(UpdateClientFormSchema),
@@ -75,7 +76,9 @@ export function UpdateClientForm({
                 control={control}
                 render={({ field }) => (
                   <EditAddressForm
-                    {...field}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onErrorClear={() => clearErrors("address")}
                     placeholder="12 Rue du Lac, 75001 Paris"
                   />
                 )}

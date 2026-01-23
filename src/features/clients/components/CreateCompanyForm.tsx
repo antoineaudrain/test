@@ -38,13 +38,17 @@ export function CreateCompanyForm({
     control,
     register,
     handleSubmit,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<CreateClientCompanyFormInput>({
     resolver: zodResolver(schema) as any,
   });
 
+  console.log({ errors })
+
   const onSubmit = async (input: CreateClientCompanyFormInput) => {
     try {
+      console.log({ input })
       await createCompany({ input });
     } catch (error) {
       console.error("Failed to new company:", error);
@@ -81,6 +85,7 @@ export function CreateCompanyForm({
                   <EditAddressForm
                     value={field.value}
                     onChange={field.onChange}
+                    onErrorClear={() => clearErrors("address")}
                     disabled={isSubmitting}
                     placeholder="12 Rue du Lac, 75001 Paris"
                   />

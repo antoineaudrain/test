@@ -7,7 +7,7 @@ export const CreateCompanyFormSchema = z.object({
     .min(1, { message: "Le nom est requis" })
     .max(100, { message: "Le nom est trop long" })
     .trim(),
-  address: UpdateAddressSchema.required(),
+  address: UpdateAddressSchema,
   ownerEmail: z
     .string()
     .email({ message: "Email invalide" })

@@ -1,11 +1,14 @@
 import { z } from "zod";
 
 export const UpdateAddressSchema = z.object({
-  externalId: z.string().min(1, { message: "L’adresse est obligatoire." }),
+  externalId: z
+    .string()
+    .min(1, { message: "L'identifiant externe est invalide." })
+    .optional(), // Optional for manual entries
   formattedAddress: z
     .string()
-    .min(1, { message: "L’adresse est obligatoire." }),
-  address: z.string().min(1, { message: "L’adresse est obligatoire." }),
+    .min(1, { message: "L'adresse est obligatoire." }),
+  address: z.string().min(1, { message: "L'adresse est obligatoire." }),
   city: z.string().min(1, { message: "La ville est obligatoire." }),
   state: z
     .string()
@@ -22,7 +25,8 @@ export const UpdateAddressSchema = z.object({
   latitude: z
     .number()
     .min(-90, { message: "La latitude doit être comprise entre -90 et 90." })
-    .max(90, { message: "La latitude doit être comprise entre -90 et 90." }),
+    .max(90, { message: "La latitude doit être comprise entre -90 et 90." })
+    .optional(), // Optional for manual entries without geocoding
   longitude: z
     .number()
     .min(-180, {
@@ -30,7 +34,8 @@ export const UpdateAddressSchema = z.object({
     })
     .max(180, {
       message: "La longitude doit être comprise entre -180 et 180.",
-    }),
+    })
+    .optional(), // Optional for manual entries without geocoding
 });
 
 export type UpdateAddressInput = z.infer<typeof UpdateAddressSchema>;

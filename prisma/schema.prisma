@@ -74,16 +74,16 @@ model User {
 }
 
 model Address {
-  id               String @id @default(cuid())
-  externalId       String
+  id               String  @id @default(cuid())
+  externalId       String? // Mapbox ID - optional for manual entries
   address          String
   city             String
   state            String
   postalCode       String
   country          String
   formattedAddress String
-  latitude         Float
-  longitude        Float
+  latitude         Float?  // Optional - manual addresses may not have coordinates
+  longitude        Float?  // Optional - manual addresses may not have coordinates
 
   // Relations
   companies    Company[]             @relation("company_address")

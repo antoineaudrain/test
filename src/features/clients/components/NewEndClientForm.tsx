@@ -24,6 +24,7 @@ export function NewEndClientForm() {
     control,
     register,
     handleSubmit,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<CreateEndClientFormInput>({
     resolver: zodResolver(CreateEndClientFormSchema),
@@ -62,6 +63,7 @@ export function NewEndClientForm() {
                   <EditAddressForm
                     value={field.value}
                     onChange={field.onChange}
+                    onErrorClear={() => clearErrors("address")}
                     disabled={isSubmitting}
                     placeholder="12 Rue du Lac, 75001 Paris"
                   />

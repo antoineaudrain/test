@@ -66,9 +66,21 @@ export default async function ClientDetailsPage({
             defaultValues={{
               ...client,
               address: {
-                ...client.address,
-                latitude: parseFloat(String(client.address.latitude)),
-                longitude: parseFloat(String(client.address.longitude)),
+                ...(client.address.externalId && {
+                  externalId: client.address.externalId,
+                }),
+                address: client.address.address,
+                city: client.address.city,
+                state: client.address.state,
+                postalCode: client.address.postalCode,
+                country: client.address.country,
+                formattedAddress: client.address.formattedAddress,
+                ...(client.address.latitude != null && {
+                  latitude: parseFloat(String(client.address.latitude)),
+                }),
+                ...(client.address.longitude != null && {
+                  longitude: parseFloat(String(client.address.longitude)),
+                }),
               },
               cutoffTime: client.clientSettings?.cutoffTime || null,
             }}

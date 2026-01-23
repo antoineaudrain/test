@@ -14,8 +14,8 @@ export type DeliveryCreationData = {
     address: {
       id: string;
       formattedAddress: string;
-      latitude: number;
-      longitude: number;
+      latitude: number | null;
+      longitude: number | null;
     };
     requestStops: DeliveryRequestStopWithDetails[];
   }>;
@@ -87,8 +87,8 @@ export async function getDeliveryCreationData(
         address: {
           id: string;
           formattedAddress: string;
-          latitude: number;
-          longitude: number;
+          latitude: number | null;
+          longitude: number | null;
         };
         requestStops: DeliveryRequestStopWithDetails[];
       }
@@ -99,7 +99,12 @@ export async function getDeliveryCreationData(
         endClientsMap.set(stop.endClientId, {
           id: stop.endClientCompany.id,
           name: stop.endClientCompany.name,
-          address: stop.address,
+          address: {
+            id: stop.address.id,
+            formattedAddress: stop.address.formattedAddress,
+            latitude: stop.address.latitude,
+            longitude: stop.address.longitude,
+          },
           requestStops: [],
         });
       }
