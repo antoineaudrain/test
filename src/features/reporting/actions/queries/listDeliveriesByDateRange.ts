@@ -41,10 +41,17 @@ export async function listDeliveriesByDateRange({
         gte: startDate,
         lte: endDate,
       },
-      // Client companies can only see their own deliveries
+      // Client companies can only see deliveries with their end clients
       ...(policies.isClientCompany() && {
+        stops: {
+          some: {
+            endClientCompany: {
+              parentId: ctx.company.id,
+            },
+          },
+        },
       }),
-      // Delivery companies can see all deliveries
+      // Delivery companies can see all their deliveries
       ...(policies.isDeliveryCompany() && {
         deliveryCompanyId: ctx.company.id,
       }),
@@ -64,6 +71,14 @@ export async function listDeliveriesByDateRange({
               },
             },
           },
+          // Filter stops to only include the client company's end clients
+          ...(policies.isClientCompany() && {
+            where: {
+              endClientCompany: {
+                parentId: ctx.company.id,
+              },
+            },
+          }),
           orderBy: {
             sequence: "asc",
           },
