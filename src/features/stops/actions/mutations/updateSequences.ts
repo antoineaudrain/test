@@ -22,9 +22,7 @@ export async function updateSequences({
     const delivery = await prisma.delivery.findFirst({
       where: {
         id: deliveryId,
-        OR: [
-          { deliveryCompanyId: ctx.company.id },
-        ],
+        OR: [{ deliveryCompanyId: ctx.company.id }],
       },
       include: {
         stops: true,
@@ -40,9 +38,7 @@ export async function updateSequences({
           id,
           delivery: {
             id: deliveryId,
-            OR: [
-              { deliveryCompanyId: ctx.company.id },
-            ],
+            OR: [{ deliveryCompanyId: ctx.company.id }],
           },
         },
         data: { sequence },

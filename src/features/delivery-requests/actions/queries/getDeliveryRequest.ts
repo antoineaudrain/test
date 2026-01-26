@@ -9,38 +9,36 @@ export async function getDeliveryRequest({
 }: {
   requestId: string;
 }): Promise<DeliveryRequestWithStops | null> {
-  return withAuth<DeliveryRequestWithStops | null>(
-    async (ctx, policies) => {
-      // 1. Get the delivery request
-      const request = await prisma.deliveryRequest.findUnique({
-        where: { id: requestId },
-        include: {
-          stops: {
-            include: {
-              address: true,
-              endClientCompany: true,
-              deliveryStop: {
-                include: {
-                  delivery: true,
-                },
+  return withAuth<DeliveryRequestWithStops | null>(async (ctx, policies) => {
+    // 1. Get the delivery request
+    const request = await prisma.deliveryRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        stops: {
+          include: {
+            address: true,
+            endClientCompany: true,
+            deliveryStop: {
+              include: {
+                delivery: true,
               },
             },
-            orderBy: {
-              sequence: "asc",
-            },
           },
-          deliveryCompany: true,
+          orderBy: {
+            sequence: "asc",
+          },
         },
-      });
+        deliveryCompany: true,
+      },
+    });
 
-      if (!request) {
-        return null;
-      }
+    if (!request) {
+      return null;
+    }
 
-      // 2. Validate permissions
-      policies.canViewDeliveryRequest(request);
+    // 2. Validate permissions
+    policies.canViewDeliveryRequest(request);
 
-      return request;
-    },
-  );
+    return request;
+  });
 }

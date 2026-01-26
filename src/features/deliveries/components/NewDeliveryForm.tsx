@@ -41,7 +41,7 @@ import {
   Text,
   Textarea,
 } from "@/features/shared/components";
-import { Time } from "@/lib/time";
+import { Time, todayDateString } from "@/lib/time";
 
 type EndClientData = {
   id: string;
@@ -244,7 +244,7 @@ export function NewDeliveryForm({
             <Input
               type="date"
               {...register("date")}
-              min={Time().format("YYYY-MM-DD")}
+              min={todayDateString()}
             />
             {errors?.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
           </Field>

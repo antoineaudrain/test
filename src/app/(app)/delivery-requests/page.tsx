@@ -68,12 +68,52 @@ export default async function DeliveryRequestsPage() {
               const allAssigned = assignedStops === request.stops.length;
               const someAssigned = assignedStops > 0 && !allAssigned;
 
-              // Get unique delivery numbers
-              const deliveryNumbers = new Set(
-                request.stops
-                  .filter((s) => s.deliveryStop?.delivery)
-                  .map((s) => s.deliveryStop?.delivery?.number),
+              // Get unique deliveries with their statuses
+              const allDeliveries = request.stops
+                .map((s) => s.deliveryStop?.delivery)
+                .filter(
+                  (d): d is NonNullable<typeof d> =>
+                    d !== null && d !== undefined,
+                );
+
+              const uniqueDeliveries = Array.from(
+                new Map(allDeliveries.map((d) => [d.id, d] as const)).values(),
               );
+
+              // Get unique delivery numbers for display
+              const deliveryNumbers = new Set(
+                uniqueDeliveries.map((d) => d.number),
+              );
+
+              // Check delivery statuses
+              const hasInProgressDelivery = uniqueDeliveries.some(
+                (d) => d.deliveryStatus === "IN_PROGRESS",
+              );
+              const allDeliveriesCompleted =
+                allAssigned &&
+                uniqueDeliveries.length > 0 &&
+                uniqueDeliveries.every((d) => d.deliveryStatus === "COMPLETED");
+
+              // Determine badge status
+              let badgeColor: "blue" | "green" | "amber" | "zinc";
+              let badgeText: string;
+
+              if (hasInProgressDelivery) {
+                badgeColor = "blue";
+                badgeText = "En cours";
+              } else if (allDeliveriesCompleted) {
+                badgeColor = "green";
+                badgeText = "Terminé";
+              } else if (allAssigned) {
+                badgeColor = "green";
+                badgeText = "Entièrement assigné";
+              } else if (someAssigned) {
+                badgeColor = "amber";
+                badgeText = "Partiellement assigné";
+              } else {
+                badgeColor = "zinc";
+                badgeText = "Non assigné";
+              }
 
               return (
                 <TableRow key={request.id}>
@@ -100,17 +140,7 @@ export default async function DeliveryRequestsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      color={
-                        allAssigned ? "green" : someAssigned ? "amber" : "zinc"
-                      }
-                    >
-                      {allAssigned
-                        ? "Entièrement assigné"
-                        : someAssigned
-                          ? "Partiellement assigné"
-                          : "Non assigné"}
-                    </Badge>
+                    <Badge color={badgeColor}>{badgeText}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">

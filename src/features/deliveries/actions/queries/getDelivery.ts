@@ -16,6 +16,15 @@ export type GetDeliveryReturn = DeliveryWithRelations<{
         };
       };
       address: true;
+      sourceRequestStop: {
+        include: {
+          request: {
+            include: {
+              clientCompany: true;
+            };
+          };
+        };
+      };
     };
   };
 }> | null;
@@ -69,6 +78,15 @@ export async function getDelivery({
               },
             },
             address: true,
+            sourceRequestStop: {
+              include: {
+                request: {
+                  include: {
+                    clientCompany: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

@@ -5,19 +5,22 @@ import { DeliveryMap } from "@/features/addresses/components/Map";
 import { getDelivery } from "@/features/deliveries/actions/queries/getDelivery";
 import { DeleteDeliveryButton } from "@/features/deliveries/components/DeleteDeliveryButton";
 import { DeliveryLabel } from "@/features/deliveries/components/DeliveryLabel";
+import { DeliveryRequestNotes } from "@/features/deliveries/components/DeliveryRequestNotes";
 import {
   DeliveryStopTable,
   type DeliveryStopTableRow,
 } from "@/features/deliveries/components/DeliveryStopTable";
 import { EditDeliverySequenceForm } from "@/features/deliveries/components/EditDeliverySequenceForm";
-import { EditDeliveryStopsForm } from "@/features/deliveries/components/EditDeliveryStopsForm";
 import { ResumeDeliveryButton } from "@/features/deliveries/components/ResumeDeliveryButton";
 import { StartDeliveryButton } from "@/features/deliveries/components/StartDeliveryButton";
 import { StatusBadge } from "@/features/deliveries/components/StatusBadge";
 import { WaybillButton } from "@/features/deliveries/components/WaybillButton";
-import { listDriver } from "@/features/employees/actions/queries/listDriver";
 import { Heading, Link, Subheading, Text } from "@/features/shared/components";
-import { checkPermission, requirePermission } from "@/lib/permissions";
+import {
+  checkPermission,
+  requireAuth,
+  requirePermission,
+} from "@/lib/permissions";
 import { Time } from "@/lib/time";
 
 type DeliveryDetailsPageProps = {
@@ -48,6 +51,10 @@ export default async function DeliveryDetailsPage({
   if (!delivery) {
     notFound();
   }
+
+  // Get current user's company info
+  const { ctx, policies } = await requireAuth();
+  const isClientCompany = policies.isClientCompany();
 
   const { hasPermission: canDeleteDelivery } = await checkPermission(
     (policies) => policies.canDeleteDeliveries(delivery),
@@ -163,12 +170,12 @@ export default async function DeliveryDetailsPage({
         {canViewDeliveryStopTable && <DeliveryStopTable data={data} />}
 
         <div>
-          <Subheading>Notes</Subheading>
-          {delivery.notes ? (
-            <Text>{delivery.notes}</Text>
-          ) : (
-            <Text className="italic opacity-30">Pas de notes</Text>
-          )}
+          <Subheading>Notes des demandes</Subheading>
+          <DeliveryRequestNotes
+            delivery={delivery}
+            currentUserCompanyId={ctx.company.id}
+            isClientCompany={isClientCompany}
+          />
         </div>
 
         {delivery.deliveryStatus === "COMPLETED" && (

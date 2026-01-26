@@ -13,9 +13,7 @@ export async function startNextStop({ deliveryId }: StartNextStopProps) {
     const delivery = await prisma.delivery.findUnique({
       where: {
         id: deliveryId,
-        OR: [
-          { deliveryCompanyId: ctx.company.id },
-        ],
+        OR: [{ deliveryCompanyId: ctx.company.id }],
       },
       include: {
         driver: true,

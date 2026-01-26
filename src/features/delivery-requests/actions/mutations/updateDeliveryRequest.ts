@@ -144,6 +144,7 @@ export async function updateDeliveryRequest({
     // 8. Revalidate and redirect
     revalidatePath("/delivery-requests");
     revalidatePath(`/delivery-requests/${validatedInput.requestId}`);
+    revalidatePath("/deliveries");
     redirect("/delivery-requests");
   });
 }

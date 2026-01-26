@@ -130,12 +130,7 @@ export function ManualAddressForm({
         <p className="text-sm text-amber-600 dark:text-amber-500">
           ⚠️ Adresse sans coordonnées GPS
         </p>
-        <Button
-          type="button"
-          onClick={onCancel}
-          disabled={disabled}
-          outline
-        >
+        <Button type="button" onClick={onCancel} disabled={disabled} outline>
           Annuler
         </Button>
       </div>

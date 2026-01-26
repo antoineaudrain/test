@@ -71,8 +71,7 @@ export async function getDeliveryCreationData(
           },
         },
         request: {
-          include: {
-          },
+          include: {},
         },
       },
       orderBy: [{ endClientId: "asc" }, { sequence: "asc" }],

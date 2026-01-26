@@ -8,7 +8,7 @@ import { createDeliveryRequest } from "@/features/delivery-requests/actions/muta
 import { updateDeliveryRequest } from "@/features/delivery-requests/actions/mutations/updateDeliveryRequest";
 import type { DeliveryRequestWithStops } from "@/features/delivery-requests/types";
 import { Button, Input, Textarea } from "@/features/shared/components";
-import { Time } from "@/lib/time";
+import { Time, todayDateString } from "@/lib/time";
 
 type DeliveryRequestFormProps = {
   mode: "create" | "edit";
@@ -33,7 +33,7 @@ export function DeliveryRequestForm({
   const [date, setDate] = useState(
     mode === "edit" && request
       ? Time(request.date).format("YYYY-MM-DD")
-      : Time().format("YYYY-MM-DD"),
+      : todayDateString(),
   );
   const [notes, setNotes] = useState(request?.notes || "");
   const [stops, setStops] = useState<StopFormData[]>(

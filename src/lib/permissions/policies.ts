@@ -233,7 +233,9 @@ export class Policies {
   }
 
   canViewDelivery<
-    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+    D extends DeliveryWithRelations<{
+      stops: { include: { endClientCompany: true } };
+    }>,
   >(delivery: D): void {
     if (
       this.isDeliveryCompany() &&
@@ -252,7 +254,9 @@ export class Policies {
   }
 
   canViewDeliveries<
-    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+    D extends DeliveryWithRelations<{
+      stops: { include: { endClientCompany: true } };
+    }>,
   >(deliveries: D[]): void {
     deliveries.forEach((delivery) => this.canViewDelivery(delivery));
   }
@@ -267,7 +271,9 @@ export class Policies {
   }
 
   canUpdateDeliveryStops<
-    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+    D extends DeliveryWithRelations<{
+      stops: { include: { endClientCompany: true } };
+    }>,
   >(delivery: D): void {
     if (!this.isClientCompany())
       throw new PolicyError("Only client can update delivery stops");
@@ -299,7 +305,9 @@ export class Policies {
   }
 
   canViewDeliveryStopTable<
-    D extends DeliveryWithRelations<{ stops: { include: { endClientCompany: true } } }>,
+    D extends DeliveryWithRelations<{
+      stops: { include: { endClientCompany: true } };
+    }>,
   >(delivery: D): void {
     if (this.isDeliveryCompany()) {
       if (!this.isCurrentCompanyId(delivery.deliveryCompanyId))

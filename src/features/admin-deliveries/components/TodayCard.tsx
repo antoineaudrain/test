@@ -9,14 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/features/shared/components";
-import { Time } from "@/lib/time";
+import { Time, todayDateString } from "@/lib/time";
 
 type TodayCardProps = {
   data: DashboardData["today"];
 };
 
 export function TodayCard({ data }: TodayCardProps) {
-  const today = Time().format("YYYY-MM-DD");
+  const today = todayDateString();
   const hasDeliveries = data.deliveries.length > 0;
   const hasRequests = data.requests !== null;
 

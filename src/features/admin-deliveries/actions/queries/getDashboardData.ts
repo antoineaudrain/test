@@ -3,7 +3,7 @@
 import type { Prisma } from "@/generated/prisma";
 import prisma from "@/lib/database/prisma";
 import { withAuth } from "@/lib/permissions";
-import { dateStringToDate, Time } from "@/lib/time";
+import { dateStringToDate, Time, todayDateString } from "@/lib/time";
 
 type DeliveryWithRelations = Prisma.DeliveryGetPayload<{
   include: {
@@ -35,7 +35,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     policies.canViewAdminDeliveriesPage();
 
     // 2. Get today and tomorrow dates
-    const today = Time().format("YYYY-MM-DD");
+    const today = todayDateString();
     const tomorrow = Time().add(1, "day").format("YYYY-MM-DD");
 
     const todayDate = dateStringToDate(today);

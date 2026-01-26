@@ -247,7 +247,7 @@ export function EditAddressForm({
       )}
 
       {/* Manual entry button - more prominent when there's an issue */}
-      {(hasNoResults || fetchError) ? (
+      {hasNoResults || fetchError ? (
         <Button
           type="button"
           onClick={handleOpenManualEntry}

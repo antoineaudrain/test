@@ -44,7 +44,7 @@ import {
   Textarea,
 } from "@/features/shared/components";
 import { isPast } from "@/features/shared/helper/time";
-import { Time } from "@/lib/time";
+import { Time, todayDateString } from "@/lib/time";
 
 type EndClientData = {
   id: string;
@@ -280,7 +280,10 @@ export function NewDeliveryRequestForm({
 
     const isSelected = !stops[idx].selected;
     setValue(`stops.${idx}.selected`, isSelected);
-    if (!isSelected) {
+    if (isSelected) {
+      // Set default type to DROPOFF when selecting
+      setValue(`stops.${idx}.type`, "DROPOFF");
+    } else {
       setValue(`stops.${idx}.type`, null);
       setValue(`stops.${idx}.notes`, undefined);
     }
@@ -351,7 +354,8 @@ export function NewDeliveryRequestForm({
             <Text>
               {
                 stops.filter(
-                  (s) => s.selected && [typeMode, "BOTH"].includes(s.type ?? ""),
+                  (s) =>
+                    s.selected && [typeMode, "BOTH"].includes(s.type ?? ""),
                 ).length
               }
             </Text>
@@ -405,12 +409,7 @@ export function NewDeliveryRequestForm({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      isSubmitting,
-      isPending,
-      canModify,
-      mode,
-    ],
+    [isSubmitting, isPending, canModify, mode],
   );
 
   const table = useReactTable({
@@ -563,7 +562,7 @@ export function NewDeliveryRequestForm({
             <Input
               type="date"
               {...register("date")}
-              min={Time().format("YYYY-MM-DD")}
+              min={todayDateString()}
               disabled={mode === "edit" || !canModify}
             />
             {errors?.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}

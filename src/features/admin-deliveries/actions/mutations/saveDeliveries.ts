@@ -151,10 +151,7 @@ export async function saveDeliveries(
         include: {
           address: true,
           endClientCompany: true,
-          request: {
-            include: {
-            },
-          },
+          request: true,
         },
         orderBy: {
           sequence: "asc",
@@ -196,7 +193,6 @@ export async function saveDeliveries(
             vehicleId: vehicle.id,
             driverName: `${driver.firstName} ${driver.lastName}`,
             vehicleLicensePlate: vehicle.plate,
-            notes: deliveryInput.label,
           },
         });
 
@@ -241,7 +237,6 @@ export async function saveDeliveries(
           data: {
             number: deliveryNumber,
             date: dateStringToDate(validatedInput.date),
-            notes: deliveryInput.label,
             deliveryCompanyId: ctx.company.id,
             driverId: driver.id,
             vehicleId: vehicle.id,
