@@ -53,6 +53,7 @@ type EndClientData = {
   address: {
     formattedAddress: string;
   };
+  defaultStopType: "PICKUP" | "DROPOFF" | "BOTH" | null;
 };
 
 type NewDeliveryRequestFormProps = {
@@ -194,13 +195,13 @@ export function NewDeliveryRequestForm({
         };
       });
     } else {
-      // In new mode, all unselected
+      // In new mode, auto-select and apply defaults if available
       return endClients.map((client, i) => ({
         companyId: client.id,
-        selected: false,
+        selected: client.defaultStopType !== null,
         name: client.name,
         sequence: i,
-        type: null,
+        type: client.defaultStopType,
         notes: undefined,
         hasDelivery: false,
       }));
@@ -351,7 +352,8 @@ export function NewDeliveryRequestForm({
             <Text>
               {
                 stops.filter(
-                  (s) => s.selected && [typeMode, "BOTH"].includes(s.type ?? ""),
+                  (s) =>
+                    s.selected && [typeMode, "BOTH"].includes(s.type ?? ""),
                 ).length
               }
             </Text>
@@ -405,12 +407,7 @@ export function NewDeliveryRequestForm({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      isSubmitting,
-      isPending,
-      canModify,
-      mode,
-    ],
+    [isSubmitting, isPending, canModify, mode],
   );
 
   const table = useReactTable({

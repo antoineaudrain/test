@@ -152,8 +152,7 @@ export async function saveDeliveries(
           address: true,
           endClientCompany: true,
           request: {
-            include: {
-            },
+            include: {},
           },
         },
         orderBy: {

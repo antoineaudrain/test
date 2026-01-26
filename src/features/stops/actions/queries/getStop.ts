@@ -25,9 +25,7 @@ export async function getStop({
         id: stopId,
         delivery: {
           id: deliveryId,
-          OR: [
-            { deliveryCompanyId: ctx.company.id },
-          ],
+          OR: [{ deliveryCompanyId: ctx.company.id }],
         },
       },
       include: {

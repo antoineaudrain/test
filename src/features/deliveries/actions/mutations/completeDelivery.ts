@@ -22,8 +22,7 @@ export async function completeDelivery({
   return withAuth<void>(async (_ctx, _policies) => {
     const delivery = await prisma.delivery.findUnique({
       where: { id: deliveryId },
-      include: {
-      },
+      include: {},
     });
 
     if (!delivery) throw new Error("Delivery not found");

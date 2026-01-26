@@ -6,7 +6,10 @@ import { withAuth } from "@/lib/permissions";
 
 export type GetClientReturn = ClientWithRelations<{
   address: true;
-  clientCompanies: true;
+  clientCompanies: {
+    include: { address: true };
+    orderBy: { createdAt: "asc" };
+  };
   clientSettings: true;
 }> | null;
 
@@ -23,7 +26,14 @@ export async function getClient({ clientId }: GetClientProps) {
       },
       include: {
         address: true,
-        clientCompanies: true,
+        clientCompanies: {
+          include: {
+            address: true,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
         clientSettings: true,
       },
     });

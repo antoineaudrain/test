@@ -17,7 +17,12 @@ export const useAutocomplete = (query: string) => {
       }
 
       setIsLoading(true);
-      MapboxClient.suggest({ country: "FR", language: "fr-FR", q: debouncedQuery, limit: 6 })
+      MapboxClient.suggest({
+        country: "FR",
+        language: "fr-FR",
+        q: debouncedQuery,
+        limit: 6,
+      })
         .then(setSuggestions)
         .catch((error) => {
           console.error("Autocomplete failed:", error);
