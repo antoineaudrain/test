@@ -48,6 +48,7 @@ export type DeliveryRequestWithStops = DeliveryRequestWithRelations<{
     };
   };
   deliveryCompany: true;
+  clientCompany: true;
 }>;
 
 export type DeliveryRequestStopWithDetails = DeliveryRequestStopWithRelations<{

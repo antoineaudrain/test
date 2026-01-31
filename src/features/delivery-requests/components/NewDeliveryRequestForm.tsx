@@ -60,6 +60,7 @@ type NewDeliveryRequestFormProps = {
   existingDeliveryRequestDates?: Date[];
   endClients: EndClientData[];
   request?: DeliveryRequestWithStops;
+  readOnly?: boolean;
 };
 
 // Form schema (similar to CreateDeliveryFormSchema)
@@ -161,6 +162,7 @@ export function NewDeliveryRequestForm({
   endClients,
   existingDeliveryRequestDates = [],
   request,
+  readOnly = false,
 }: NewDeliveryRequestFormProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -270,15 +272,21 @@ export function NewDeliveryRequestForm({
     stops.findIndex((s) => s.companyId === companyId);
 
   const toggleSelection = (companyId: string) => {
-    const idx = getStopIndex(companyId);
+    // Get fresh stops data from form state
+    const currentStops = watch("stops") ?? [];
+    const idx = currentStops.findIndex((s) => s.companyId === companyId);
     if (idx < 0) return;
 
     // Prevent deselecting stops that are linked to deliveries
-    if (mode === "edit" && stops[idx].hasDelivery && stops[idx].selected) {
+    if (
+      mode === "edit" &&
+      currentStops[idx].hasDelivery &&
+      currentStops[idx].selected
+    ) {
       return;
     }
 
-    const isSelected = !stops[idx].selected;
+    const isSelected = !currentStops[idx].selected;
     setValue(`stops.${idx}.selected`, isSelected);
     if (isSelected) {
       // Set default type to DROPOFF when selecting
@@ -316,6 +324,7 @@ export function NewDeliveryRequestForm({
         footer: () => <Text>Total: {stops.length}</Text>,
         cell: ({ row: { original } }) => {
           const isDisabled =
+            readOnly ||
             isSubmitting ||
             isPending ||
             !canModify ||
@@ -370,6 +379,7 @@ export function NewDeliveryRequestForm({
                   <Checkbox
                     checked={[typeMode, "BOTH"].includes(original.type ?? "")}
                     disabled={
+                      readOnly ||
                       !original.selected ||
                       isSubmitting ||
                       isPending ||
@@ -390,6 +400,7 @@ export function NewDeliveryRequestForm({
         cell: ({ row: { original } }) => {
           const stopIndex = getStopIndex(original.companyId);
           const isDisabled =
+            readOnly ||
             !original.selected ||
             isSubmitting ||
             isPending ||
@@ -518,8 +529,26 @@ export function NewDeliveryRequestForm({
       {/*  </div>*/}
       {/*)}*/}
 
+      {/* Read-only Warning for Delivery Companies */}
+      {readOnly && (
+        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-blue-900 dark:text-blue-100">
+                Consultation uniquement
+              </p>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                Cette demande de livraison est en lecture seule. Seul le client
+                peut la modifier.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cutoff Warning */}
-      {mode === "edit" && !canModify && cutoffTime && (
+      {mode === "edit" && !canModify && cutoffTime && !readOnly && (
         <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -563,7 +592,7 @@ export function NewDeliveryRequestForm({
               type="date"
               {...register("date")}
               min={todayDateString()}
-              disabled={mode === "edit" || !canModify}
+              disabled={readOnly || mode === "edit" || !canModify}
             />
             {errors?.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
           </Field>
@@ -688,7 +717,7 @@ export function NewDeliveryRequestForm({
               {...register("notes")}
               rows={4}
               placeholder="Détaillez les contraintes horaires, accès spécifiques ou infos utiles pour la livraison..."
-              disabled={isSubmitting || isPending}
+              disabled={readOnly || isSubmitting || isPending}
             />
             {errors?.notes && (
               <ErrorMessage>{errors.notes.message}</ErrorMessage>
@@ -697,32 +726,34 @@ export function NewDeliveryRequestForm({
         </FieldGroup>
       </Fieldset>
 
-      <div className="flex items-center justify-end gap-4">
-        {mode === "edit" && (
+      {!readOnly && (
+        <div className="flex items-center justify-end gap-4">
+          {mode === "edit" && (
+            <Button
+              type="button"
+              onClick={handleCancel}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={isPending || !canModify}
+            >
+              Annuler la demande
+            </Button>
+          )}
           <Button
-            type="button"
-            onClick={handleCancel}
-            className="bg-red-600 hover:bg-red-700 text-white"
-            disabled={isPending || !canModify}
+            type="submit"
+            disabled={
+              isSubmitting || isPending || (mode === "edit" && !canModify)
+            }
           >
-            Annuler la demande
+            {isSubmitting || isPending
+              ? mode === "create"
+                ? "Création en cours..."
+                : "Mise à jour en cours..."
+              : mode === "create"
+                ? "Créer"
+                : "Sauvegarder"}
           </Button>
-        )}
-        <Button
-          type="submit"
-          disabled={
-            isSubmitting || isPending || (mode === "edit" && !canModify)
-          }
-        >
-          {isSubmitting || isPending
-            ? mode === "create"
-              ? "Création en cours..."
-              : "Mise à jour en cours..."
-            : mode === "create"
-              ? "Créer"
-              : "Sauvegarder"}
-        </Button>
-      </div>
+        </div>
+      )}
     </form>
   );
 }

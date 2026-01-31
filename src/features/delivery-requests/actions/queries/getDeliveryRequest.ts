@@ -9,7 +9,7 @@ export async function getDeliveryRequest({
 }: {
   requestId: string;
 }): Promise<DeliveryRequestWithStops | null> {
-  return withAuth<DeliveryRequestWithStops | null>(async (ctx, policies) => {
+  return withAuth<DeliveryRequestWithStops | null>(async (_ctx, policies) => {
     // 1. Get the delivery request
     const request = await prisma.deliveryRequest.findUnique({
       where: { id: requestId },
@@ -29,6 +29,7 @@ export async function getDeliveryRequest({
           },
         },
         deliveryCompany: true,
+        clientCompany: true,
       },
     });
 

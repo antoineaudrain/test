@@ -43,7 +43,7 @@ type ClientsTableProps = {
 
 export function ClientTable({ data }: ClientsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "createdAt", desc: true },
+    { id: "displayName", desc: false },
   ]);
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
@@ -60,7 +60,16 @@ export function ClientTable({ data }: ClientsTableProps) {
         header: () => <Text>Nom</Text>,
         cell: (props) => <Strong>{props.getValue()}</Strong>,
         enableSorting: true,
-        sortingFn: "alphanumeric",
+        sortingFn: (a, b) => {
+          return a.original.displayName.localeCompare(
+            b.original.displayName,
+            "fr",
+            {
+              numeric: true,
+              sensitivity: "base",
+            },
+          );
+        },
       }),
       columnHelper.accessor("address", {
         header: () => <Text>Adresse</Text>,

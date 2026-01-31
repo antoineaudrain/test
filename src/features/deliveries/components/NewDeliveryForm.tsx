@@ -241,11 +241,7 @@ export function NewDeliveryForm({
         <FieldGroup>
           <Field>
             <Label>Date</Label>
-            <Input
-              type="date"
-              {...register("date")}
-              min={todayDateString()}
-            />
+            <Input type="date" {...register("date")} min={todayDateString()} />
             {errors?.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
           </Field>
         </FieldGroup>

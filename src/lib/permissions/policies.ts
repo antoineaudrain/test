@@ -433,14 +433,45 @@ export class Policies {
       );
   }
 
-  canViewDeliveryRequest<T extends { clientCompanyId: string }>(
+  canViewDeliveryRequest<
+    T extends { clientCompanyId: string; deliveryCompanyId: string },
+  >(request: T): void {
+    // Client companies can view their own requests
+    if (this.isClientCompany()) {
+      if (!this.isCurrentCompanyId(request.clientCompanyId)) {
+        throw new PolicyError(
+          "Can only view delivery requests from the same company",
+        );
+      }
+      return;
+    }
+
+    // Delivery companies can view requests assigned to them
+    if (this.isDeliveryCompany()) {
+      if (!this.isCurrentCompanyId(request.deliveryCompanyId)) {
+        throw new PolicyError(
+          "Can only view delivery requests assigned to your company",
+        );
+      }
+      return;
+    }
+
+    throw new PolicyError(
+      "Only client and delivery companies can view delivery requests",
+    );
+  }
+
+  canModifyDeliveryRequest<T extends { clientCompanyId: string }>(
     request: T,
   ): void {
+    // Only client companies can modify requests
     if (!this.isClientCompany())
-      throw new PolicyError("Only client companies can view delivery requests");
+      throw new PolicyError(
+        "Only client companies can modify delivery requests",
+      );
     if (!this.isCurrentCompanyId(request.clientCompanyId))
       throw new PolicyError(
-        "Can only view delivery requests from the same company",
+        "Can only modify delivery requests from the same company",
       );
   }
 

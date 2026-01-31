@@ -3,18 +3,26 @@
 import type { DeliveryRequestWithStops } from "@/features/delivery-requests/types";
 import prisma from "@/lib/database/prisma";
 import { withAuth } from "@/lib/permissions";
+import { dateStringToDate, todayDateString } from "@/lib/time";
 
-export async function listDeliveryRequests(): Promise<
+export async function listTodayDeliveryRequestsForDeliveryCompany(): Promise<
   DeliveryRequestWithStops[]
 > {
   return withAuth<DeliveryRequestWithStops[]>(async (ctx, policies) => {
-    // 1. Validate permissions
-    policies.canViewDeliveryRequestListPage();
+    // Only delivery companies can call this
+    if (!policies.isDeliveryCompany()) {
+      throw new Error("Only delivery companies can view delivery requests");
+    }
 
-    // 2. Get requests for client company
+    // Get today's date string and convert to Date
+    const today = todayDateString();
+    const todayDate = dateStringToDate(today);
+
+    // Get requests where the delivery company matches current company
     const requests = await prisma.deliveryRequest.findMany({
       where: {
-        clientCompanyId: ctx.company.id,
+        deliveryCompanyId: ctx.company.id,
+        date: todayDate,
       },
       include: {
         stops: {
